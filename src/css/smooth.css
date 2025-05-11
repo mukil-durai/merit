@@ -1,0 +1,13 @@
+/* Initially hide elements */
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(30px); /* Elements start below */
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out; /* Smooth animation */
+  }
+  
+  /* When elements come into view */
+  .scroll-reveal.visible {
+    opacity: 1;
+    transform: translateY(0); /* Move to original position */
+  }
+  

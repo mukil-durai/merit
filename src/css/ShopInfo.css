@@ -1,0 +1,40 @@
+.shop-info {
+   /* Light gray background */
+    padding: 10px 20px; /* Add some spacing around the content */
+  }
+  
+  .shop-details {
+    font-size: 14px; /* Adjust the text size */
+    color: #555; /* Set a neutral text color */
+  }
+  
+ 
+
+
+.email-link {
+  color: #555; /* Neutral text color */
+  text-decoration: none; /* Remove underline */
+}
+
+.email-link:hover {
+  color: #90EE90; /* Light green color on hover */
+  text-decoration: none; /* Keep underline removed */
+}
+
+.email-link i {
+  color: #90EE90; /* Light green color for the icon */
+}
+
+
+.email-link:hover {
+    text-decoration: none; /* Add underline on hover */
+}
+  .me-3 {
+    margin-right: 1rem; /* Add gap between email and working hours */
+  }
+  
+  .shop-info i {
+    margin-right: 5px; /* Add spacing between icons and text */
+    color: #90EE90; 
+  }
+  

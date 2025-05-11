@@ -1,0 +1,116 @@
+.process-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    padding: 80px;
+    position: relative;
+  }
+  
+  .process-wrapper {
+    display: flex;
+    align-items: stretch; /* Ensures bars stretch to match content */
+    width: 70%;
+    position: relative;
+  }
+  
+  .process-wrapper.left {
+    justify-content: flex-start;
+  }
+  
+  .process-wrapper.right {
+    justify-content: flex-end;
+  }
+  
+  
+  .process-card {
+    background: white;
+    border: 2px solid #ddd;  /* Adds a border to make the rectangle visible */
+    border-radius: 0;  /* Makes the corners square */
+    padding: 20px;  /* Removes padding to fill the box completely */
+    width: 50%;  /* Ensure the content spans the full width */
+    position: relative;
+  
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .process-card .process-title,
+  .process-card .process-description {
+    padding: 10px;  /* Optional padding for internal content */
+  }
+  
+  
+  .process-bar {
+    width: 13px;
+   /* Makes the bar match the height of the content */
+  }
+  
+  .orange-bar {
+    background-color: orange;
+  }
+  .blue-bar {
+    background-color: blue;
+  }
+    .purple-bar {
+        background-color: purple;
+    }
+    .red-bar {
+        background-color: red;
+    }
+    .pink-bar {
+        background-color: pink;
+    }
+  
+  .green-bar {
+    background-color: green;
+  }
+  
+  /* Positioning color bars correctly */
+  .process-wrapper.left .process-bar:last-child {
+    margin-left: 10px;
+  }
+  
+  .process-wrapper.right .process-bar:first-child {
+    margin-right: 10px;
+  }
+  
+  /* Styling for text */
+  .process-title {
+    font-size: 1.5em;
+    font-weight: bold;
+  }
+  
+  .orange-text {
+    color: orange;
+  }
+  .blue-text {
+    color: blue;
+  }
+    .purple-text {
+        color: purple;
+    }
+    .red-text {
+        color: red;
+    }
+    .pink-text {
+        color: pink;
+    }
+    
+  
+  .green-text {
+    color: green;
+  }
+  
+  .process-description {
+    color: #555;
+  }
+ .mukil{
+  color: #555;
+  font-size: 18px;  
+  line-height: 1.2;
+  align-items: center;
+  justify-content: center;
+  text-align: justify;
+ } 

@@ -1,0 +1,132 @@
+/* about.css */
+
+/* General container styling */
+.about-container {
+   
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    color:whitesmoke
+  }
+  
+  /* Title styling */
+  .title {
+    
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: green;
+ 
+    margin-bottom: 20px;
+  }
+  
+  /* Intro text styling */
+  .intro-text {
+    font-size: 1.2rem;
+    line-height: 1.6;
+   
+    margin-bottom: 30px;
+    color: #1d6318a0;
+  }
+  
+  /* Description text styling */
+  .description {
+    font-size: 1rem;
+    line-height: 1.6;
+  
+    margin-bottom: 40px;
+    color: #666;
+  }
+  /* Vision box styling */
+.vision-box {
+    background-color: #3498db; /* Change to blue for Vision */
+    padding: 20px;
+    border-left: solid #2980b9; /* Darker blue for left border */
+    margin-bottom: 30px;
+    border-radius: 5px;
+  }
+  
+  .vision-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: whitesmoke; /* Change text color to light for contrast */
+    margin: 0;
+  }
+  
+  /* Mission box styling */
+  /* Mission box styling */
+.mission-box {
+    background-color: #e74c3c;
+    
+    padding: 20px;
+    border-left: 5px solid #e74c3c; /* Red left border for Mission */
+    margin-bottom: 30px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Add a slight shadow for more definition */
+  }
+  
+  .mission-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color:white;
+    margin: 0;
+  }
+  /* Hero Section Text Styling */
+.heros-container {
+    position: relative;
+    height: 310px;
+    background-size: cover;
+    background-position: center;
+  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color:white;
+    font-family: 'Lora', serif; /* Use Poppins font for text */
+  }
+  
+  .heros-content h1 {
+    font-size: 48px;
+    font-weight: 600; /* Bold text */
+    line-height: 1.3;
+    text-transform: uppercase; /* Optional: makes text all uppercase */
+    letter-spacing: 2px; /* Adds space between letters for a clean look */
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); /* Optional: Adds text shadow for better readability */
+  }
+
+.z-1 {
+  z-index: 1;
+}
+
+.display-4 {
+  font-size: 2.5rem;
+  font-weight: 300;
+  line-height: 1.2;
+}
+
+/* Card hover effect */
+.card {
+  transition: transform 0.3s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* Stats section icons */
+.text-success {
+  color: #28a745;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .display-4 {
+    font-size: 2rem;
+  }
+}
+
+
+
+
+

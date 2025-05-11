@@ -1,0 +1,132 @@
+/* Default Navbar - Always Fixed and Yellow */
+.navbar {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  background-color: #FFD700 !important; /* Always Yellow */
+  padding: 15px 20px;
+  overflow: visible; /* Prevents dropdown from being clipped */
+}
+
+/* Ensures content is not hidden behind navbar */
+body {
+  padding-top: 80px; /* Adjust according to the navbar height */
+}
+
+/* Logo Styling */
+.navbar-brand img {
+  height: 50px;
+  margin-right: 10px;
+}
+
+/* Navbar Items */
+.navbar-nav {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  gap: 20px;
+}
+
+/* Navbar Links - Always Black */
+.navbar .nav-link {
+  font-size: 16px;
+  font-weight: 500;
+  color: black !important;
+}
+
+/* Dropdown Menu Fix */
+.navbar .dropdown {
+  position: relative; /* Required for correct dropdown positioning */
+}
+
+.dropdown-menu {
+  background-color: #FFD700;
+  border: none;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+
+.dropdown:hover .dropdown-menu,
+.dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Dropdown Items */
+.dropdown-menu .dropdown-item {
+  color: #333;
+  font-size: 14px;
+  padding: 8px 15px;
+  transition: background 0.3s ease;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background: #ffcc00;
+  color: black;
+}
+
+/* Navbar Toggle Button */
+.navbar-toggler {
+  border: none;
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+}
+
+/* Navbar Toggler Icon - Always Black */
+.navbar-toggler-icon {
+  filter: none;
+}
+
+/* Mobile View Adjustments */
+@media (max-width: 991px) {
+  .navbar {
+    background: #FFD700 !important;
+  }
+
+  .nav-link {
+    color: black !important;
+  }
+
+  .navbar-nav {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .navbar-nav .nav-item {
+    width: 100%;
+    padding: 10px 0;
+  }
+
+  .dropdown-menu {
+    text-align: center;
+  }
+}
+.navbar-nav .nav-link {
+  font-family: 'Lora', serif;
+  font-size: 18px; /* Adjust as needed */
+  font-weight: bold; /* Ensures bold text */
+}
+/* Profile Icon Styling */
+.profile-icon {
+  width: 40px; /* Adjust size */
+  height: 40px;
+  border-radius: 50%; /* Makes it circular */
+  object-fit: cover; /* Ensures it looks good */
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  margin-left: auto; /* Pushes the icon to the right */
+  margin-right: 20px; /* Adds right spacing */
+}
+
+.profile-icon:hover {
+  transform: scale(1.1); /* Slight zoom effect on hover */
+}

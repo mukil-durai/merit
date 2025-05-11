@@ -1,0 +1,61 @@
+.checkout-progress {
+  padding: 20px 0;
+  position: relative;
+}
+
+.step-item {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f8f9fa;
+  border: 2px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  color: #6c757d;
+  transition: all 0.3s ease;
+}
+
+.step-title {
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.step-item.active .step-icon {
+  background: #ffc107;
+  border-color: #ffc107;
+  color: #000;
+}
+
+.step-item.active .step-title {
+  color: #000;
+}
+
+.progress-line {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  height: 2px;
+  background: #ffc107;
+  transition: width 0.3s ease;
+}
+
+.progress-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: #dee2e6;
+  z-index: -1;
+}

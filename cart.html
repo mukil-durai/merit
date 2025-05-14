@@ -1,0 +1,43 @@
+<!-- Cart Page -->
+<div class="cart-container">
+  <!-- Existing cart items and details -->
+</div>
+
+<button id="proceedToCheckout">Proceed to Checkout</button>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  document.getElementById('proceedToCheckout').addEventListener('click', async () => {
+    const response = await fetch('http://localhost:3000/api/create-order', { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 50000 }) // Replace with actual amount
+    });
+    const { orderId, amount, currency, key } = await response.json();
+
+    const options = {
+      key, // Razorpay API Key
+      amount, // Amount in paise
+      currency,
+      order_id: orderId,
+      name: "Your Company Name",
+      description: "Cart Payment",
+      handler: function (response) {
+        alert("Payment Successful!");
+        // Call backend to confirm the order
+        fetch('/confirm-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(response),
+        }).then(() => alert("Order Confirmed!"));
+      },
+      prefill: {
+        name: "Customer Name",
+        email: "customer@example.com",
+        contact: "9999999999",
+      },
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+  });
+</script>

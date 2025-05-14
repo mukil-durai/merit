@@ -1,6 +1,8 @@
 import { createContext, useState, useEffect } from "react";
 import axios from 'axios';
 
+const API_BASE_URL = "http://localhost:5001"; // Ensure the port matches the backend server
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -31,17 +33,17 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserData = async (token) => {
     try {
-      const response = await axios.get('http://localhost:5001/api/profile', {
+      const response = await axios.get(`${API_BASE_URL}/api/profile`, {
         headers: { Authorization: token }
       });
 
-      if (response.data?.user) {
+      // Fix: The backend returns user fields directly, not under .user
+      if (response.data) {
         const updatedUser = {
-          ...response.data.user,
-          profilePic: response.data.user.profilePic
+          ...user,
+          ...response.data, // merge all fields from backend (including profilePic as string)
         };
         setUser(updatedUser);
-        // Update localStorage with new user data
         try {
           localStorage.setItem("user", JSON.stringify(updatedUser));
         } catch (e) {
@@ -115,13 +117,12 @@ export const AuthProvider = ({ children }) => {
         ...updatedUser
       }));
 
-      // Update localStorage with complete user data
       localStorage.setItem('user', JSON.stringify({
         ...user,
         ...updatedUser
       }));
 
-      // Refresh user data from server
+      // Refresh user data from server (will update profilePic as string)
       await fetchUserData(token);
     } catch (error) {
       console.error('Error updating user profile:', error);

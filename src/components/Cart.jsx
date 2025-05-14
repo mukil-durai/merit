@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { CartContext } from "../components/Cartcontext";
 import { AuthContext } from "../pages/AuthContext";
 import './Cart.css';
@@ -29,6 +29,8 @@ import {
 } from "react-bootstrap-icons";
 import axios from 'axios';
 
+const API_BASE_URL = "http://localhost:5001"; // Update base URL to match backend server
+
 // ✅ Helper function for image handling:
 const getImageSrc = (image) => {
   if (!image) return "https://via.placeholder.com/250";
@@ -36,7 +38,7 @@ const getImageSrc = (image) => {
   return `data:image/jpeg;base64,${image}`;
 };
 
-// New checkout step components
+// Replace the CheckoutProgressBar component with the improved version
 const CheckoutProgressBar = ({ currentStep }) => {
   const steps = [
     { title: 'Cart', icon: <BagCheck /> },
@@ -47,26 +49,40 @@ const CheckoutProgressBar = ({ currentStep }) => {
 
   return (
     <div className="checkout-progress mb-4">
-      <div className="d-flex justify-content-between position-relative">
+      <div className="checkout-steps-container">
         {steps.map((step, index) => (
           <div 
-            key={index} 
-            className={`step-item ${currentStep >= index + 1 ? 'active' : ''}`}
+            key={index}
+            className={`checkout-step ${currentStep >= index + 1 ? 'active' : ''} ${currentStep > index + 1 ? 'completed' : ''}`}
           >
-            <div className="step-icon">
-              {currentStep > index + 1 ? <CheckCircle /> : step.icon}
+            <div className="step-circle">
+              {currentStep > index + 1 ? (
+                <CheckCircle className="check-icon" />
+              ) : (
+                <div className="step-number">
+                  <span>{index + 1}</span>
+                  {currentStep === index + 1 && <div className="active-pulse"></div>}
+                </div>
+              )}
             </div>
-            <div className="step-title">{step.title}</div>
+            <div className="step-label">{step.title}</div>
+
+            {index < steps.length - 1 && (
+              <div className={`step-line ${currentStep > index + 1 ? 'completed' : ''}`}>
+                {currentStep > index + 1 && <div className="moving-car-container">
+                  <Truck className="moving-car" />
+                </div>}
+              </div>
+            )}
           </div>
         ))}
-        <div className="progress-line" style={{ width: `${(currentStep - 1) * 33.33}%` }} />
       </div>
     </div>
   );
 };
 
 const Cart = () => {
-  const { cartItems, setCartItems, updateCartCount } = useContext(CartContext);
+  const { cartItems, clearCart, updateCartCount } = useContext(CartContext);
   const { isAuthenticated, user } = useContext(AuthContext);
   const [showCheckout, setShowCheckout] = useState(false);
   const [step, setStep] = useState(1);
@@ -75,6 +91,177 @@ const Cart = () => {
   const [name, setName] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [orderPlaced, setOrderPlaced] = useState(false);
+
+  useEffect(() => {
+    const styleEl = document.createElement('style');
+    styleEl.innerHTML = `
+      /* Checkout Progress Bar Styles */
+      .checkout-progress {
+        position: relative;
+        padding: 30px 0;
+        margin-bottom: 2rem;
+        overflow: visible;
+      }
+
+      .checkout-steps-container {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      .checkout-step {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+
+      .step-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 0 5px white, 0 2px 5px rgba(0,0,0,0.1);
+        position: relative;
+        transition: all 0.5s ease;
+        margin-bottom: 10px;
+        font-weight: 500;
+        color: #6c757d;
+      }
+
+      .checkout-step.active .step-circle {
+        background-color: #0d6efd;
+        color: white;
+        transform: scale(1.15);
+        box-shadow: 0 0 0 5px white, 0 5px 15px rgba(13, 110, 253, 0.3);
+      }
+
+      .checkout-step.completed .step-circle {
+        background-color: #198754;
+        color: white;
+        box-shadow: 0 0 0 5px white, 0 5px 15px rgba(25, 135, 84, 0.3);
+      }
+
+      .step-number {
+        font-size: 1.2rem;
+        position: relative;
+      }
+
+      .check-icon {
+        font-size: 1.3rem;
+        animation: check-appear 0.5s ease;
+      }
+
+      .step-label {
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: #6c757d;
+        transition: all 0.3s ease;
+      }
+
+      .checkout-step.active .step-label {
+        color: #0d6efd;
+        font-weight: 600;
+      }
+
+      .checkout-step.completed .step-label {
+        color: #198754;
+        font-weight: 600;
+      }
+
+      .step-line {
+        position: absolute;
+        top: 25px;
+        left: 60%;
+        width: 80%;
+        height: 4px;
+        background-color: #e9ecef;
+        z-index: 0;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .step-line.completed {
+        background-color: #198754;
+      }
+
+      .active-pulse {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(13, 110, 253, 0.3);
+        animation: pulse-ring 2s ease infinite;
+      }
+
+      .moving-car-container {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .moving-car {
+        position: absolute;
+        color: white;
+        font-size: 20px;
+        top: -8px;
+        animation: move-truck 4s linear infinite;
+      }
+
+      @keyframes pulse-ring {
+        0% {
+          transform: translate(-50%, -50%) scale(0.8);
+          opacity: 0.8;
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.3);
+          opacity: 0;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(0.8);
+          opacity: 0;
+        }
+      }
+
+      @keyframes check-appear {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.3);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes move-truck {
+        0% {
+          left: -15px;
+        }
+        100% {
+          left: calc(100% + 15px);
+        }
+      }
+    `;
+    document.head.appendChild(styleEl);
+    return () => {
+      document.head.removeChild(styleEl);
+    };
+  }, []);
 
   const calculateTotal = () =>
     cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -99,81 +286,118 @@ const Cart = () => {
     updateCartCount();
   };
 
+  const handleRazorpayPayment = async () => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/create-order`, {
+        amount: calculateTotal() * 100, // Convert to paise
+      });
+
+      const { orderId, key, amount, currency } = response.data;
+
+      const options = {
+        key, // Razorpay API Key
+        amount, // Amount in paise
+        currency,
+        order_id: orderId,
+        name: "Your Company Name",
+        description: "Cart Payment",
+        handler: async function (paymentResponse) {
+          alert("Payment Successful!");
+          // Store the order in the backend
+          try {
+            const token = localStorage.getItem("token"); // Retrieve token from localStorage
+            if (!token) {
+              alert("You are not logged in. Please log in to place an order.");
+              return;
+            }
+
+            const orderData = {
+              items: cartItems.map(item => ({
+                productId: item._id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                image: item.image,
+              })),
+              totalAmount: calculateTotal(),
+              name,
+              phone,
+              address,
+              paymentId: paymentResponse.razorpay_payment_id,
+            };
+
+            await axios.post(`${API_BASE_URL}/api/store-order`, orderData, {
+              headers: {
+                Authorization: token, // Pass the token in the Authorization header
+              },
+            });
+            alert("Order Stored Successfully!");
+
+            // Clear cart items using clearCart function
+            clearCart();
+            updateCartCount();
+
+            // Set orderPlaced to true to show the success message
+            setOrderPlaced(true);
+          } catch (error) {
+            console.error("Error storing order:", error.response || error);
+            alert(error.response?.data?.error || "Failed to store order. Please contact support.");
+          }
+        },
+        prefill: {
+          name: user?.name || "Customer Name",
+          email: user?.email || "customer@example.com",
+          contact: phone || "9999999999",
+        },
+      };
+
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => {
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      };
+      script.onerror = () => {
+        alert("Failed to load Razorpay. Please try again.");
+      };
+      document.body.appendChild(script);
+    } catch (error) {
+      console.error("Error initiating Razorpay payment:", error.response || error);
+      alert("Failed to initiate payment. Please check the backend API.");
+    }
+  };
+
   const handleCheckout = () => {
     if (!isAuthenticated) {
       alert("Please login to proceed!");
       return;
     }
     setShowCheckout(true);
-    setStep(1);
-    setOrderPlaced(false);
   };
 
   const nextStep = () => {
-    if (step === 2 && address.trim() === "") {
-      alert("Please enter delivery address.");
-      return;
+    if (step === 2) {
+      if (address.trim() === "") {
+        alert("Please enter delivery address.");
+        return;
+      }
+      if (name.trim() === "") {
+        alert("Please enter your full name.");
+        return;
+      }
+      if (phone.trim() === "" || !/^\d{10}$/.test(phone)) {
+        alert("Please enter a valid 10-digit phone number.");
+        return;
+      }
     }
-    if (step === 3 && (name.trim() === "" || phone.trim() === "")) {
-      alert("Please enter your name and phone number.");
-      return;
-    }
-    if (step === 4 && paymentMethod.trim() === "") {
-      alert("Please select a payment method.");
-      return;
+    if (step === 4) {
+      handleRazorpayPayment(); // Trigger Razorpay payment
+      return; // Wait for Razorpay to complete before proceeding
     }
     setStep(step + 1);
   };
 
   const previousStep = () => setStep(step - 1);
-
-  const confirmOrder = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token || !name || !phone || !address) {
-        alert('Please fill in all delivery details');
-        return;
-      }
-
-      const orderData = {
-        items: cartItems.map(item => ({
-          productId: item._id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image
-        })),
-        totalAmount: calculateTotal(),
-        // Add delivery details
-        name: name,
-        phone: phone,
-        address: address
-      };
-
-      const response = await axios.post('http://localhost:5001/api/orders', orderData, {
-        headers: {
-          Authorization: token
-        }
-      });
-
-      if (response.data?.order) {
-        setOrderPlaced(true);
-        if (isAuthenticated && user) {
-          localStorage.removeItem(`cart_${user.id}`);
-        }
-        setCartItems([]);
-        updateCartCount();
-        
-        setTimeout(() => {
-          setShowCheckout(false);
-          navigate('/profile'); // Redirect to profile page
-        }, 2000);
-      }
-    } catch (error) {
-      console.error('Error placing order:', error);
-      alert(error.response?.data?.error || 'Failed to place order. Please try again.');
-    }
-  };
 
   const renderStepContent = () => {
     switch (step) {
@@ -286,22 +510,11 @@ const Cart = () => {
         return (
           <Card className="border-0 shadow-sm">
             <Card.Body>
-              <h5 className="mb-4">Select Payment Method</h5>
-              <ListGroup variant="flush">
-                {['UPI', 'Credit/Debit Card', 'Net Banking', 'Cash on Delivery'].map((method) => (
-                  <ListGroup.Item key={method} className="py-3">
-                    <Form.Check
-                      type="radio"
-                      id={method}
-                      name="paymentMethod"
-                      label={method}
-                      checked={paymentMethod === method}
-                      onChange={() => setPaymentMethod(method)}
-                      className="d-flex align-items-center gap-3"
-                    />
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
+              <h5 className="mb-4">Confirm Your Details</h5>
+              <p><strong>Name:</strong> {name}</p>
+              <p><strong>Phone:</strong> {phone}</p>
+              <p><strong>Address:</strong> {address}</p>
+              <p><strong>Total Amount:</strong> ₹{calculateTotal()}</p>
             </Card.Body>
           </Card>
         );
@@ -310,35 +523,8 @@ const Cart = () => {
         return (
           <Card className="border-0 shadow-sm">
             <Card.Body>
-              <h5 className="mb-4">Order Summary</h5>
-              <ListGroup variant="flush">
-                <ListGroup.Item className="d-flex justify-content-between align-items-center">
-                  <span>Items Total</span>
-                  <span>₹{calculateTotal()}</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-center">
-                  <span>Delivery Charges</span>
-                  <Badge bg="success">FREE</Badge>
-                </ListGroup.Item>
-                <ListGroup.Item className="bg-light">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <h6 className="mb-0">Total Amount</h6>
-                    <h5 className="mb-0 text-success">₹{calculateTotal()}</h5>
-                  </div>
-                </ListGroup.Item>
-              </ListGroup>
-
-              <div className="mt-4">
-                <h6>Delivery Address:</h6>
-                <p className="mb-0">{name}</p>
-                <p className="mb-0">{address}</p>
-                <p className="mb-0">Phone: {phone}</p>
-              </div>
-
-              <div className="mt-4">
-                <h6>Payment Method:</h6>
-                <p className="mb-0">{paymentMethod}</p>
-              </div>
+              <h5 className="mb-4">Proceed to Payment</h5>
+              <p>Click "Pay Now" to complete your payment using Razorpay.</p>
             </Card.Body>
           </Card>
         );
@@ -457,8 +643,8 @@ const Cart = () => {
                 Continue <ArrowRight size={20} />
               </Button>
             ) : (
-              <Button variant="success" onClick={confirmOrder}>
-                Place Order <Truck className="ms-2" />
+              <Button variant="success" onClick={handleRazorpayPayment}>
+                Pay Now <Truck className="ms-2" />
               </Button>
             )}
           </Modal.Footer>

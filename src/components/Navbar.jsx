@@ -22,12 +22,12 @@ const Navbar = () => {
   const cartItemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   const getProfileImage = () => {
-    if (user?.profilePic) {
+    if (user?.profilePic && typeof user.profilePic === "string") {
       return (
         <div className="profile-image-container">
           <img
             src={user.profilePic}
-            alt={user.name}
+            alt={user.name || "Profile"}
             className="rounded-circle border border-2 border-white shadow-sm"
             style={{
               width: "32px",
@@ -36,7 +36,7 @@ const Navbar = () => {
             }}
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = "https://via.placeholder.com/32";
+              e.target.src = "https://via.placeholder.com/32"; // Fallback image
             }}
           />
         </div>

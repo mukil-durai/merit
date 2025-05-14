@@ -70,7 +70,6 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Add clearCart function
   const clearCart = () => {
     if (isAuthenticated && user) {
       localStorage.removeItem(`cart_${user.id}`);

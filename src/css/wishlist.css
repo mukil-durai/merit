@@ -1,0 +1,121 @@
+/* Wishlist Button Styling */
+.wishlist-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.wishlist-btn:hover {
+  transform: scale(1.1);
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.wishlist-btn.active {
+  background-color: #ffecf0;
+}
+
+.wishlist-btn.active:hover {
+  background-color: #ffe0e6;
+}
+
+/* Wishlist Badge Styling */
+.wishlist-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.wishlist-badge .badge {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 50%;
+  background-color: #dc3545;
+  color: white;
+  font-weight: bold;
+}
+
+/* Wishlist modal enhancements */
+.wishlist-modal .modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.wishlist-modal .modal-header {
+  padding: 15px 20px;
+}
+
+.wishlist-modal .modal-footer {
+  border-top: 1px solid #f0f0f0;
+  padding: 15px 20px;
+}
+
+/* Wishlist item animations */
+.wishlist-modal .list-group-item {
+  transition: background-color 0.2s ease;
+}
+
+.wishlist-modal .list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Empty wishlist state */
+.wishlist-empty-state {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.wishlist-empty-state .heart-icon {
+  color: #dee2e6;
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+/* Wishlist item count badge animation */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.wishlist-count-badge {
+  animation: pulse 1s ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .wishlist-modal .list-group-item {
+    padding: 10px;
+  }
+  
+  .wishlist-btn {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Extra hover effects for buttons */
+.wishlist-modal .btn {
+  transition: all 0.2s ease;
+}
+
+.wishlist-modal .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}

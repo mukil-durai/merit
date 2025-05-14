@@ -44,11 +44,11 @@ const SignIn = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:5001/signin", formData);
+      const response = await axios.post("http://localhost:5001/signin", formData); // Ensure the endpoint is correct
       try {
         await login({
           token: response.data.token,
-          user: response.data.user
+          user: response.data.user,
         });
         alert("Login successful");
         navigate("/home");
@@ -64,6 +64,7 @@ const SignIn = () => {
         return;
       }
     } catch (error) {
+      console.error("Error during login:", error.response || error);
       setError(error.response?.data?.error || "Something went wrong.");
     } finally {
       setLoading(false);

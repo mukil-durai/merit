@@ -7,7 +7,8 @@ import {
   FaDollarSign, FaCogs, FaUserTie, FaHandHoldingHeart, FaLeaf, 
   FaShieldAlt, FaArrowRight, FaChevronLeft, FaChevronRight, FaSearch, 
   FaStore, FaMapMarkerAlt, FaEnvelope, FaPhone, FaFacebookF, FaInstagram, 
-  FaLinkedinIn, FaTwitter, FaHeadset, FaArrowUp // Corrected import
+  FaLinkedinIn, FaTwitter, FaHeadset, FaArrowUp, FaShippingFast, FaPercent,
+  FaCreditCard, FaGift, FaTags, FaCheckCircle // Added new icons
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -29,7 +30,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleProductClick = (product) => {
-    navigate(`/catlog/${product}`); // Navigate to specific product category
+    navigate(`/catlog/${product}`); // Corrected template literal syntax
   };
 
   useEffect(() => {
@@ -145,7 +146,7 @@ const Home = () => {
     { 
       img: shoppingBagImg, 
       title: "Shopping Bags", 
-      key: "shoppingBag",
+      key: "kitchen",
       description: "Eco-friendly, durable shopping bags in various designs and sizes"
     },
     { 
@@ -162,13 +163,23 @@ const Home = () => {
     },
   ];
 
+  // Marquee announcements for e-commerce
+  const announcements = [
+    { icon: <FaShippingFast />, text: "Free Shipping on Orders Over ₹999" },
+    { icon: <FaPercent />, text: "Season Sale! Up to 40% Off" },
+    { icon: <FaCreditCard />, text: "Secure Payment Options Available" },
+    { icon: <FaGift />, text: "Free Gift Wrapping on All Orders" },
+    { icon: <FaTags />, text: "Bulk Order Discounts for Businesses" },
+    { icon: <FaCheckCircle />, text: "100% Quality Assurance" },
+  ];
+
   return (
     <>
       {/* Hero Section with Bootstrap Carousel */}
       <div id="heroCarousel" className="carousel slide" data-bs-ride="carousel">
         <div className="carousel-inner">
           <div className="carousel-item active">
-            <div className="position-relative text-center text-white d-flex align-items-center justify-content-center" style={{ height: "600px", overflow: "hidden" }}>
+            <div className="position-relative text-center text-white d-flex align-items-center justify-content-center" style={{ height: "550px", overflow: "hidden" }}>
               <video
                 autoPlay
                 loop
@@ -187,10 +198,10 @@ const Home = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8 }}
                 >
-                  <h1 className="display-4 fw-bold text-uppercase mb-4">
+                  <h1 className="display-4 fw-bold text-uppercase mb-3">
                     From subtle hues to bold shades, <br /> we can match any color palette
                   </h1>
-                  <p className="lead mb-4">Premium textile solutions for home and business</p>
+                  <p className="lead mb-3">Premium textile solutions for home and business</p>
                   <div className="d-flex justify-content-center gap-3">
                     <button 
                       className="btn btn-warning btn-lg px-4 py-2" 
@@ -212,30 +223,23 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Featured Categories Cards */}
-      <div className="container py-5">
-        <div className="row">
-          <div className="col-12">
-            <div className="card border-0 shadow-sm mb-5">
-              <div className="card-body p-4">
-                <div className="row align-items-center">
-                  <div className="col-md-6">
-                    <h4 className="fw-bold text-success mb-3">Looking for quality textile products?</h4>
-                    <p className="text-muted mb-0">
-                      Browse our extensive catalog of premium textile solutions crafted with care and precision.
-                      From kitchen essentials to decorative linens, we have everything you need.
-                    </p>
-                  </div>
-                  <div className="col-md-6 text-md-end mt-3 mt-md-0">
-                    <button className="btn btn-success me-2">Request a Quote</button>
-                    <button className="btn btn-outline-success">Contact Sales</button>
-                  </div>
+      {/* E-commerce Marquee Announcements */}
+      <div className="bg-dark py-3 position-relative overflow-hidden">
+        <div className="marquee-container">
+          <div className="marquee-content">
+            {[...announcements, ...announcements].map((item, index) => (
+              <div key={index} className="d-inline-flex align-items-center mx-4">
+                <div className="blinking-icon text-warning me-2">
+                  {item.icon}
                 </div>
+                <span className="text-white">{item.text}</span>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
+
+    
 
       {/* Updated Featured Kitchen Products - Bootstrap Carousel */}
       <div 
@@ -277,9 +281,11 @@ const Home = () => {
                         >
                           <div className="position-relative">
                             <img
-                              src={product.image?.startsWith("data:image") 
-                                ? product.image 
-                                : `data:image/jpeg;base64,${product.image}`}
+                              src={
+                                product.image?.startsWith("data:image") 
+                                  ? product.image 
+                                  : `data:image/jpeg;base64,${product.image}` // Corrected template literal syntax
+                              }
                               className="card-img-top"
                               style={{ height: "200px", objectFit: "cover" }}
                               alt={product.name}
@@ -324,9 +330,11 @@ const Home = () => {
                         >
                           <div className="position-relative">
                             <img
-                              src={product.image?.startsWith("data:image") 
-                                ? product.image 
-                                : `data:image/jpeg;base64,${product.image}`}
+                              src={
+                                product.image?.startsWith("data:image") 
+                                  ? product.image 
+                                  : `data:image/jpeg;base64,${product.image}` // Corrected template literal syntax
+                              }
                               className="card-img-top"
                               style={{ height: "200px", objectFit: "cover" }}
                               alt={product.name}
@@ -418,6 +426,20 @@ const Home = () => {
               <p className="text-muted">
                 Our skilled craftsmen and women use traditional techniques and modern innovations to bring your vision to life. From weaving and dyeing to embroidery and stitching, we have a wide range of expertise that allows us to create a variety of products to suit your needs.
               </p>
+              <div className="mt-4">
+                <button 
+                  className="btn btn-success me-3"
+                  onClick={() => window.open("https://youtu.be/yRXuKFy89Mg?si=k98mkhDpFMY8QIAo", "_blank")}
+                >
+                  Our Story
+                </button>
+                <button 
+                  className="btn btn-outline-success"
+                  onClick={() => navigate("/contact")} // Navigate to the contact page
+                >
+                  Contact Us
+                </button>
+              </div>
               <div className="row g-4 mt-4">
                 <div className="col-sm-6">
                   <div className="d-flex align-items-center">
@@ -428,7 +450,7 @@ const Home = () => {
                     </div>
                     <div className="flex-grow-1 ms-3">
                       <h5 className="fw-bold mb-1">Trusted Partners</h5>
-                      <p className="text-muted mb-0">Global clients trust our quality</p>
+                      <p className="text-muted mb-0">Building long-term relationships with clients worldwide</p>
                     </div>
                   </div>
                 </div>
@@ -441,14 +463,10 @@ const Home = () => {
                     </div>
                     <div className="flex-grow-1 ms-3">
                       <h5 className="fw-bold mb-1">Eco-Friendly</h5>
-                      <p className="text-muted mb-0">Sustainable manufacturing practices</p>
+                      <p className="text-muted mb-0">Promoting sustainability through responsible practices</p>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="mt-4">
-                <button className="btn btn-success me-3">Our Story</button>
-                <button className="btn btn-outline-success">Contact Us</button>
               </div>
             </div>
           </div>
@@ -473,7 +491,7 @@ const Home = () => {
                 transition={{ delay: index * 0.2 }}
                 className="col-md-4 col-lg"
               >
-                <div className={`card border-0 shadow h-100 ${stat.bgColor}`}>
+                <div className={`card border-0 shadow h-100 ${stat.bgColor}`}> {/* Corrected JSX attribute syntax */}
                   <div className="card-body p-4">
                     <div className="text-center">
                       <div className="stat-icon mb-3">
@@ -588,7 +606,7 @@ const Home = () => {
                   trusted and reliable partner.
                 </p>
                 <div className="mt-auto pt-3 text-center">
-                  <button className="btn btn-outline-success">Learn More</button>
+                  <p className="text-muted fst-italic">"Empowering homes with quality and style."</p>
                 </div>
               </motion.div>
             </div>
@@ -608,7 +626,7 @@ const Home = () => {
                   service while being a responsible and sustainable company and a leader in the industry.
                 </p>
                 <div className="mt-auto pt-3 text-center">
-                  <button className="btn btn-outline-success">Learn More</button>
+                  <p className="text-muted fst-italic">"Committed to excellence and sustainability."</p>
                 </div>
               </motion.div>
             </div>
@@ -674,7 +692,17 @@ const Home = () => {
                     </p>
                   </div>
                   <div className="col-md-4 text-md-end text-center">
-                    <button className="btn btn-success px-4 py-2">Request a Quote</button>
+                    <button
+                      className="btn btn-success px-4 py-2"
+                      onClick={() => {
+                        navigate("/contact"); // Navigate to the contact page
+                        setTimeout(() => {
+                          document.getElementById("contact-form")?.scrollIntoView({ behavior: "smooth" });
+                        }, 100); // Ensure the page is loaded before scrolling
+                      }}
+                    >
+                      Request a Quote
+                    </button>
                   </div>
                 </div>
               </div>

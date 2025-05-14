@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { 
   FaMapMarkerAlt, 
@@ -14,6 +15,8 @@ import {
   FaCheckCircle,
   FaExclamationTriangle
 } from "react-icons/fa";
+
+const API_BASE_URL = "http://localhost:5001"; // Update base URL to match backend server
 
 const Contact = () => {
   const [loading, setLoading] = useState(false);
@@ -57,27 +60,44 @@ const Contact = () => {
     e.preventDefault();
     setLoading(true);
     setSubmitStatus({ show: false, success: false, message: '' });
-    
-    // Simulate API call with timeout
-    setTimeout(() => {
-      try {
-        // For demonstration, assume success
-        setSubmitStatus({
-          show: true,
-          success: true,
-          message: 'Message sent successfully! We will get back to you soon.'
-        });
-        setFormData({ fullName: "", email: "", phone: "", subject: "", message: "" });
-      } catch (error) {
+
+    try {
+      // Validate form data
+      if (!formData.fullName || !formData.email || !formData.message) {
         setSubmitStatus({
           show: true,
           success: false,
-          message: 'Failed to send message. Please try again later.'
+          message: 'Please fill in all required fields (name, email, and message).',
         });
-      } finally {
         setLoading(false);
+        return;
       }
-    }, 1500);
+      
+      console.log('Sending form data:', formData);
+      const response = await axios.post(`${API_BASE_URL}/send-email`, formData);
+      
+      console.log('Server response:', response.data);
+      
+      if (response.data.success) {
+        setSubmitStatus({
+          show: true,
+          success: true,
+          message: 'Message sent successfully! We will get back to you soon.',
+        });
+        setFormData({ fullName: "", email: "", phone: "", subject: "", message: "" });
+      } else {
+        throw new Error(response.data.message || 'Unknown error occurred');
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setSubmitStatus({
+        show: true,
+        success: false,
+        message: error.response?.data?.message || 'Failed to send message. Please try again later.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const contactInfo = [

@@ -1,31 +1,19 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin, ArrowUp } from "lucide-react";
+import { Phone, Mail, MapPin, ArrowUp } from "lucide-react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const Footer = () => {
   const navigate = useNavigate();
   const [emailSubscription, setEmailSubscription] = useState("");
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
-  
+
   const handleServiceClick = (service) => {
     navigate('/process', { state: { scrollTo: service } });
   };
-  
+
   const handleNavigation = (path) => {
     navigate(path);
-  };
-
-  const handleSubscription = (e) => {
-    e.preventDefault();
-    // Simulate subscription process
-    if (emailSubscription && emailSubscription.includes('@')) {
-      setSubscriptionStatus("success");
-      setEmailSubscription("");
-      setTimeout(() => setSubscriptionStatus(null), 3000);
-    } else {
-      setSubscriptionStatus("error");
-    }
   };
 
   const scrollToTop = () => {
@@ -34,7 +22,7 @@ const Footer = () => {
       behavior: "smooth"
     });
   };
-  
+
   return (
     <footer style={{ backgroundColor: "#1c4532", color: "white" }}>
       {/* Main Footer */}
@@ -45,32 +33,15 @@ const Footer = () => {
             <div className="mb-4">
               <img src="src/assets/logog.png" alt="Merit Creaters Logo" className="img-fluid mb-3" style={{ maxHeight: "80px" }} />
               <p className="text-light">
-                Merit Creaters is a home textile manufacturer producing a wide range
-                of products for the home, including bedding, towels, curtains, and
-                more.
+                Merit Creaters is a home textile manufacturer producing a wide range of products for the home, including bedding, towels, curtains, and more. 
+                Our mission is to provide high-quality, stylish, and durable home textiles that enhance the comfort and aesthetics of living spaces. 
+                With a commitment to sustainability and innovation, we ensure that every product is crafted with care, using eco-friendly materials and processes.
               </p>
-            </div>
-            
-            {/* Social Media */}
-            <div className="mt-4">
-              <h6 className="fw-bold text-white mb-3">FOLLOW US</h6>
-              <div className="d-flex gap-3">
-                <a href="#" className="text-white btn btn-sm btn-outline-light rounded-circle p-2">
-                  <Facebook size={18} />
-                </a>
-                <a href="#" className="text-white btn btn-sm btn-outline-light rounded-circle p-2">
-                  <Instagram size={18} />
-                </a>
-                <a href="#" className="text-white btn btn-sm btn-outline-light rounded-circle p-2">
-                  <Twitter size={18} />
-                </a>
-                <a href="#" className="text-white btn btn-sm btn-outline-light rounded-circle p-2">
-                  <Linkedin size={18} />
-                </a>
-              </div>
+             
+              
             </div>
           </div>
-          
+
           {/* Services */}
           <div className="col-md-3 col-6 mb-4">
             <h5 className="text-white mb-4 fw-bold position-relative">
@@ -101,7 +72,7 @@ const Footer = () => {
               ))}
             </ul>
           </div>
-          
+
           {/* Links */}
           <div className="col-md-2 col-6 mb-4">
             <h5 className="text-white mb-4 fw-bold position-relative">
@@ -138,7 +109,7 @@ const Footer = () => {
               ))}
             </ul>
           </div>
-          
+
           {/* Contact Info */}
           <div className="col-md-3 mb-4">
             <h5 className="text-white mb-4 fw-bold position-relative">
@@ -178,35 +149,10 @@ const Footer = () => {
                 </a>
               </li>
             </ul>
-
-            {/* Newsletter */}
-            <div className="mt-4">
-              <h6 className="fw-bold text-white mb-3">NEWSLETTER</h6>
-              <form onSubmit={handleSubscription}>
-                <div className="input-group">
-                  <input 
-                    type="email" 
-                    className="form-control" 
-                    placeholder="Your email" 
-                    value={emailSubscription}
-                    onChange={(e) => setEmailSubscription(e.target.value)}
-                  />
-                  <button className="btn" type="submit" style={{ backgroundColor: "#8dc63f", color: "white" }}>
-                    Subscribe
-                  </button>
-                </div>
-                {subscriptionStatus === "success" && (
-                  <div className="text-success mt-2 small">Thank you for subscribing!</div>
-                )}
-                {subscriptionStatus === "error" && (
-                  <div className="text-warning mt-2 small">Please enter a valid email.</div>
-                )}
-              </form>
-            </div>
           </div>
         </div>
       </div>
-      
+
       {/* Footer Bottom */}
       <div style={{ backgroundColor: "#163926" }}>
         <div className="container py-3">
@@ -222,7 +168,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Scroll to top button */}
       <button 
         onClick={scrollToTop} 

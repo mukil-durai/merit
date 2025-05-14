@@ -85,62 +85,57 @@ function Profile() {
   const [activeTab, setActiveTab] = useState('orders');
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const fetchProfileAndOrders = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError("Please login to view profile");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const [profileRes, ordersRes] = await Promise.all([
+        axios.get('http://localhost:5001/api/profile', { headers: { Authorization: token } }),
+        axios.get('http://localhost:5001/api/orders', { headers: { Authorization: token } })
+      ]);
+      if (profileRes.data) {
+        setProfileData({
+          ...profileRes.data,
+          orders: ordersRes.data?.orders || []
+        });
+      }
+    } catch (err) {
+      setError("Failed to load profile or orders");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProfileData = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError("Please login to view profile");
-        setLoading(false);
-        return;
-      }
-      try {
-        const response = await axios.get('http://localhost:5001/api/profile', {
-          headers: {
-            Authorization: token
-          }
-        });
-        
-        if (response.data) {
-          setProfileData(response.data);
-        }
-      } catch (err) {
-        console.error('Profile fetch error:', err);
-        if (err.response?.status === 401) {
-          setError("Session expired. Please login again.");
-        } else {
-          setError(err.response?.data?.error || "Failed to load profile data");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfileData();
+    fetchProfileAndOrders();
   }, []);
 
   useEffect(() => {
-    if (profileData?.user) {
+    if (profileData) {
       setEditForm({
-        name: profileData.user.name || '',
-        phone: profileData.user.phone || '',
-        address: profileData.user.address || '',
-        bio: profileData.user.bio || ''
+        name: profileData.name || '',
+        phone: profileData.phone || '',
+        address: profileData.address || '',
+        bio: profileData.bio || ''
       });
-      setImagePreview(profileData.user.profilePic || null);
+      setImagePreview(profileData.profilePic || null);
     }
   }, [profileData]);
 
   useEffect(() => {
-    // Password strength checker
     const checkPasswordStrength = (password) => {
       if (!password) return 0;
       
       let strength = 0;
       
-      // Length check
       if (password.length >= 8) strength += 25;
-      
-      // Character variety checks
       if (/[A-Z]/.test(password)) strength += 25;
       if (/[0-9]/.test(password)) strength += 25;
       if (/[^A-Za-z0-9]/.test(password)) strength += 25;
@@ -148,7 +143,6 @@ function Profile() {
       return strength;
     };
     
-    // Check if passwords match
     const newPw = passwordForm.newPassword;
     const confirmPw = passwordForm.confirmPassword;
     
@@ -164,7 +158,7 @@ function Profile() {
       const token = localStorage.getItem('token');
       if (!token) return;
       try {
-        const response = await axios.get('http://localhost:5001/api/orders/update-status', {
+        const response = await axios.get('http://localhost:5001/api/orders', {
           headers: { Authorization: token }
         });
         
@@ -199,15 +193,11 @@ function Profile() {
   const handleUpdateProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-      
+      if (!token) throw new Error('No authentication token found');
       const formData = {
         ...editForm,
         profilePic: imagePreview
       };
-      
       const response = await axios.put(
         'http://localhost:5001/api/profile',
         formData,
@@ -218,23 +208,15 @@ function Profile() {
           }
         }
       );
-      
       if (response.data?.user) {
-        setProfileData(prev => ({
-          ...prev,
-          user: response.data.user
-        }));
-        updateUserProfile(response.data.user);
         setShowEditModal(false);
-        
-        // Use a Bootstrap toast or alert instead of browser alert
-        document.getElementById("updateSuccessAlert").classList.remove("d-none");
-        setTimeout(() => {
-          document.getElementById("updateSuccessAlert").classList.add("d-none");
-        }, 3000);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+        fetchProfileAndOrders();
+        // Update AuthContext and localStorage so Navbar gets new profilePic immediately
+        updateUserProfile(response.data.user);
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
       alert(error.response?.data?.error || 'Failed to update profile');
     }
   };
@@ -244,11 +226,9 @@ function Profile() {
       alert("Passwords don't match");
       return;
     }
-    
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
-      
       const response = await axios.put(
         'http://localhost:5001/api/change-password',
         {
@@ -257,7 +237,6 @@ function Profile() {
         },
         { headers: { Authorization: token } }
       );
-      
       alert(response.data.message);
       setShowPasswordModal(false);
       setPasswordForm({
@@ -266,7 +245,6 @@ function Profile() {
         confirmPassword: ''
       });
     } catch (error) {
-      console.error('Change Password Error:', error);
       alert(error.response?.data?.error || 'Failed to change password');
     }
   };
@@ -275,16 +253,13 @@ function Profile() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
-      
       const response = await axios.delete('http://localhost:5001/api/delete-account', {
         headers: { Authorization: token },
       });
-      
       alert(response.data.message);
       localStorage.removeItem('token');
       window.location.href = '/signin';
     } catch (error) {
-      console.error('Delete Account Error:', error);
       alert(error.response?.data?.error || 'Failed to delete account');
     }
   };
@@ -345,13 +320,14 @@ function Profile() {
 
   return (
     <Container className="mt-5 pt-4 pb-5">
-      {/* Success Alert (hidden by default) */}
-      <Alert variant="success" className="position-fixed top-0 start-50 translate-middle-x mt-4 shadow-lg d-none" style={{ zIndex: 1050 }} id="updateSuccessAlert">
-        <div className="d-flex align-items-center">
-          <CheckCircle className="me-2" />
-          <span>Profile updated successfully!</span>
-        </div>
-      </Alert>
+      {showSuccess && (
+        <Alert variant="success" className="position-fixed top-0 start-50 translate-middle-x mt-4 shadow-lg" style={{ zIndex: 1050 }}>
+          <div className="d-flex align-items-center">
+            <CheckCircle className="me-2" />
+            <span>Profile updated successfully!</span>
+          </div>
+        </Alert>
+      )}
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -393,10 +369,13 @@ function Profile() {
                   </div>
                   
                   <Card.Title className="fs-2 fw-bold text-dark mb-1">
-                    {profileData?.user?.name}
+                    {profileData?.name}
                   </Card.Title>
                   <div className="text-muted mb-4">
-                    Member since {new Date(profileData?.user?.createdAt || Date.now()).toLocaleDateString()}
+                    Member since{" "}
+                    {profileData?.createdAt
+                      ? new Date(profileData.createdAt).toLocaleDateString()
+                      : "Not available"}
                   </div>
                   
                   <div className="d-grid gap-2 mb-4">
@@ -412,7 +391,7 @@ function Profile() {
                         <EnvelopeFill className="me-3 text-warning" size={22} />
                         <div>
                           <small className="text-muted d-block">Email Address</small>
-                          <strong>{profileData?.user?.email}</strong>
+                          <strong>{profileData?.email}</strong>
                         </div>
                       </div>
                     </ListGroup.Item>
@@ -421,7 +400,7 @@ function Profile() {
                         <Phone className="me-3 text-warning" size={22} />
                         <div>
                           <small className="text-muted d-block">Phone Number</small>
-                          <strong>{profileData?.user?.phone || 'Not provided'}</strong>
+                          <strong>{profileData?.phone || 'Not provided'}</strong>
                         </div>
                       </div>
                     </ListGroup.Item>
@@ -430,7 +409,7 @@ function Profile() {
                         <GeoAlt className="me-3 text-warning" size={22} />
                         <div>
                           <small className="text-muted d-block">Address</small>
-                          <strong>{profileData?.user?.address || 'Not provided'}</strong>
+                          <strong>{profileData?.address || 'Not provided'}</strong>
                         </div>
                       </div>
                     </ListGroup.Item>
@@ -439,7 +418,7 @@ function Profile() {
                         <PencilSquare className="me-3 text-warning mt-1" size={22} />
                         <div>
                           <small className="text-muted d-block">Bio</small>
-                          <div>{profileData?.user?.bio || 'Not provided'}</div>
+                          <div>{profileData?.bio || 'Not provided'}</div>
                         </div>
                       </div>
                     </ListGroup.Item>

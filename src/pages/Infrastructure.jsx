@@ -11,13 +11,16 @@ import infrastructure6 from '../assets/infra/infrastructure-6.jpg';
 import infrastructure7 from '../assets/infra/infrastructure-7.jpg';
 import infrastructure8 from '../assets/infra/infrastructure-8.jpg';
 import infrastructure9 from '../assets/infra/infrastructure-9.jpg';
+import infrastructure10 from '../assets/infra/infrastructure-10.jpg';
+
+import infrastructure12 from '../assets/infra/infrastructure-12.jpg';
 
 // Enhanced data with more details for modal
 const infrastructureItems = [
   {
     title: "Manufacturing Unit",
     description: "State-of-the-art manufacturing facility with modern equipment",
-    image: infrastructure1,
+    image: infrastructure7,
     category: "Production",
     icon: "bi-gear-fill",
     detailedDescription: "Our manufacturing unit is equipped with the latest machinery to handle all aspects of textile production. From cutting to finishing, every process is optimized for maximum efficiency and quality. The facility operates 24/7 with three shifts to ensure timely delivery of all orders.",
@@ -32,7 +35,7 @@ const infrastructureItems = [
   {
     title: "Sewing Department",
     description: "Advanced sewing machines operated by skilled professionals",
-    image: infrastructure2,
+    image: infrastructure8,
     category: "Production",
     icon: "bi-scissors",
     detailedDescription: "The heart of our production lies in our sewing department, where experienced tailors and seamstresses work with precision and care. Using industrial-grade sewing machines, our team can handle a wide variety of fabrics and designs.",
@@ -47,7 +50,7 @@ const infrastructureItems = [
   {
     title: "Quality Control",
     description: "Dedicated quality testing and inspection area",
-    image: infrastructure3,
+    image: infrastructure12,
     category: "Quality",
     icon: "bi-check-circle-fill",
     detailedDescription: "Our quality control department ensures that every product meets our rigorous standards before it leaves our facility. Each item undergoes multiple inspection points throughout the production process, with a final comprehensive check before packaging.",
@@ -62,7 +65,7 @@ const infrastructureItems = [
   {
     title: "Design Studio",
     description: "Creative space for designing and pattern making",
-    image: infrastructure4,
+    image: infrastructure10,
     category: "Design",
     icon: "bi-pencil-fill",
     detailedDescription: "Our design studio is where creativity meets craftsmanship. Our team of designers work with the latest software and equipment to create innovative patterns and designs. The studio features digital design tools as well as traditional drafting tables.",
@@ -77,7 +80,7 @@ const infrastructureItems = [
   {
     title: "Warehouse",
     description: "Spacious storage facility for raw materials and finished goods",
-    image: infrastructure5,
+    image: infrastructure9,
     category: "Storage",
     icon: "bi-box-seam-fill",
     detailedDescription: "Our climate-controlled warehouse ensures that all materials and finished products are stored in optimal conditions. With an advanced inventory management system, we can track every item from arrival to dispatch with precision.",
@@ -92,7 +95,7 @@ const infrastructureItems = [
   {
     title: "Packaging Unit",
     description: "Modern packaging facility ensuring product safety",
-    image: infrastructure6,
+    image: infrastructure5,
     category: "Logistics",
     icon: "bi-box-fill",
     detailedDescription: "The packaging unit is designed to protect our products during transit while presenting them attractively to the end customer. We use eco-friendly packaging materials wherever possible, aligning with our sustainability goals.",
@@ -105,10 +108,10 @@ const infrastructureItems = [
     galleryImages: [infrastructure6, infrastructure9, infrastructure3]
   },
   {
-    title: "Research Lab",
-    description: "Innovation center for textile research and development",
-    image: infrastructure7,
-    category: "R&D",
+    title: "Land Mark residence",
+    description: " Employee residence for working staff",
+    image: infrastructure1,
+    category: "Landmark",
     icon: "bi-lightbulb-fill",
     detailedDescription: "Our R&D lab is where we explore new materials, techniques, and processes to stay at the forefront of textile innovation. The team works on developing sustainable fabrics, improving production methods, and creating new product lines.",
     specifications: [
@@ -137,7 +140,7 @@ const infrastructureItems = [
   {
     title: "Admin Office",
     description: "Modern office space for administrative operations",
-    image: infrastructure9,
+    image: infrastructure6,
     category: "Administration",
     icon: "bi-building",
     detailedDescription: "Our administrative office houses departments like finance, HR, marketing, and sales. The modern workspace is designed to foster collaboration while providing comfortable individual workstations for focused tasks.",
@@ -226,7 +229,7 @@ const Infrastructure = () => {
               {category === 'Design' && <i className="bi bi-pencil-fill me-2"></i>}
               {category === 'Storage' && <i className="bi bi-box-seam-fill me-2"></i>}
               {category === 'Logistics' && <i className="bi bi-box-fill me-2"></i>}
-              {category === 'R&D' && <i className="bi bi-lightbulb-fill me-2"></i>}
+              {category === 'Landmark' && <i className="bi bi-lightbulb-fill me-2"></i>}
               {category === 'Training' && <i className="bi bi-people-fill me-2"></i>}
               {category === 'Administration' && <i className="bi bi-building me-2"></i>}
               {category}

@@ -20,18 +20,50 @@ const SignIn = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    // Clear validation errors when typing
-    setValidationErrors({
-      ...validationErrors,
-      [name]: ""
-    });
+    
+    // Validate on change
+    const newErrors = { ...validationErrors };
+    
+    if (name === "email") {
+      if (!value.trim()) {
+        newErrors.email = "Please enter your email";
+      } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
+        newErrors.email = "Please enter a valid email address";
+      } else {
+        newErrors.email = "";
+      }
+    }
+    
+    if (name === "password") {
+      if (!value.trim()) {
+        newErrors.password = "Please enter your password";
+      } else if (value.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+      } else {
+        newErrors.password = "";
+      }
+    }
+    
+    setValidationErrors(newErrors);
     setError("");
   };
 
   const validateForm = () => {
     const errors = {};
-    if (!formData.email.trim()) errors.email = "Please enter your email";
-    if (!formData.password.trim()) errors.password = "Please enter your password";
+    
+    // Email validation
+    if (!formData.email.trim()) {
+      errors.email = "Please enter your email";
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+    
+    // Password validation
+    if (!formData.password.trim()) {
+      errors.password = "Please enter your password";
+    } else if (formData.password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
+    }
     
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;

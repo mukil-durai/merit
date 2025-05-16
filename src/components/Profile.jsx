@@ -68,6 +68,12 @@ function Profile() {
     address: '',
     bio: ''
   });
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    bio: ''
+  });
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -190,7 +196,109 @@ function Profile() {
     }
   };
 
+  const handleInputChange = (field, value) => {
+    setEditForm({
+      ...editForm,
+      [field]: value
+    });
+    
+    // Validate immediately while typing
+    validateField(field, value);
+  };
+
+  const validateField = (field, value = editForm[field]) => {
+    let error = '';
+    
+    switch (field) {
+      case 'name':
+        if (!value.trim()) {
+          error = 'Name is required';
+        } else if (value.trim().length < 2) {
+          error = 'Name must be at least 2 characters';
+        } else if (!/^[a-zA-Z\s]+$/.test(value.trim())) {
+          error = 'Name should contain only letters and spaces';
+        }
+        break;
+      
+      case 'phone':
+        if (value.trim() && !/^[0-9]{10}$/.test(value.trim())) {
+          error = 'Phone number must be 10 digits';
+        }
+        break;
+      
+      case 'address':
+        if (value.trim() && value.trim().length < 15) {
+          error = 'Address must be at least 15 characters';
+        }
+        break;
+      
+      case 'bio':
+        if (value.trim() && value.trim().length > 200) {
+          error = 'Bio must be less than 200 characters';
+        }
+        break;
+        
+      default:
+        break;
+    }
+    
+    setFormErrors(prev => ({
+      ...prev,
+      [field]: error
+    }));
+    
+    return !error;
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    
+    // Create a temporary object of all current field values
+    const fieldsToValidate = {
+      name: editForm.name,
+      phone: editForm.phone,
+      address: editForm.address,
+      bio: editForm.bio
+    };
+    
+    // Validate each field and update isValid
+    Object.keys(fieldsToValidate).forEach(field => {
+      if (!validateField(field, fieldsToValidate[field])) {
+        isValid = false;
+      }
+    });
+    
+    return isValid;
+  };
+
+  const handleShowEditModal = () => {
+    if (profileData) {
+      setEditForm({
+        name: profileData.name || '',
+        phone: profileData.phone || '',
+        address: profileData.address || '',
+        bio: profileData.bio || ''
+      });
+      setImagePreview(profileData.profilePic || null);
+    }
+    
+    // Reset any errors
+    setFormErrors({
+      name: '',
+      phone: '',
+      address: '',
+      bio: ''
+    });
+    
+    setShowEditModal(true);
+  };
+
   const handleUpdateProfile = async () => {
+    // Run full validation before submission
+    if (!validateForm()) {
+      return;
+    }
+    
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
@@ -213,7 +321,6 @@ function Profile() {
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
         fetchProfileAndOrders();
-        // Update AuthContext and localStorage so Navbar gets new profilePic immediately
         updateUserProfile(response.data.user);
       }
     } catch (error) {
@@ -221,11 +328,49 @@ function Profile() {
     }
   };
 
+  const validatePasswordForm = () => {
+    let isValid = true;
+    const errors = {};
+    
+    if (!passwordForm.currentPassword) {
+      errors.currentPassword = 'Current password is required';
+      isValid = false;
+    }
+    
+    if (!passwordForm.newPassword) {
+      errors.newPassword = 'New password is required';
+      isValid = false;
+    } else if (passwordForm.newPassword.length < 8) {
+      errors.newPassword = 'Password must be at least 8 characters';
+      isValid = false;
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])/.test(passwordForm.newPassword)) {
+      errors.newPassword = 'Password must have uppercase and lowercase letters';
+      isValid = false;
+    } else if (!/(?=.*\d)/.test(passwordForm.newPassword)) {
+      errors.newPassword = 'Password must contain at least one number';
+      isValid = false;
+    } else if (!/(?=.*[@$!%*?&])/.test(passwordForm.newPassword)) {
+      errors.newPassword = 'Password must contain at least one special character';
+      isValid = false;
+    }
+    
+    if (!passwordForm.confirmPassword) {
+      errors.confirmPassword = 'Please confirm your password';
+      isValid = false;
+    } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+      isValid = false;
+    }
+    
+    return isValid;
+  };
+
   const handleChangePassword = async () => {
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      alert("Passwords don't match");
+    if (!validatePasswordForm()) {
+      alert("Please fix the validation errors before submitting.");
       return;
     }
+    
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
@@ -247,6 +392,13 @@ function Profile() {
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to change password');
     }
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setPasswordVisible(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
   };
 
   const handleDeleteAccount = async () => {
@@ -278,11 +430,24 @@ function Profile() {
     return 'Strong';
   };
 
-  const togglePasswordVisibility = (field) => {
-    setPasswordVisible(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }));
+  const handleCloseEditModal = () => {
+    setFormErrors({
+      name: '',
+      phone: '',
+      address: '',
+      bio: ''
+    });
+    
+    if (profileData) {
+      setEditForm({
+        name: profileData.name || '',
+        phone: profileData.phone || '',
+        address: profileData.address || '',
+        bio: profileData.bio || ''
+      });
+    }
+    
+    setShowEditModal(false);
   };
 
   if (loading) {
@@ -339,7 +504,7 @@ function Profile() {
             <span className="border-bottom border-warning border-3 pb-2">My Account</span>
           </h2>
           <div>
-            <Button variant="outline-warning" onClick={() => setShowEditModal(true)} className="d-flex align-items-center">
+            <Button variant="outline-warning" onClick={handleShowEditModal} className="d-flex align-items-center">
               <PencilSquare className="me-2" />
               Edit Profile
             </Button>
@@ -379,7 +544,7 @@ function Profile() {
                   </div>
                   
                   <div className="d-grid gap-2 mb-4">
-                    <Button variant="warning" onClick={() => setShowEditModal(true)} className="d-flex align-items-center justify-content-center">
+                    <Button variant="warning" onClick={handleShowEditModal} className="d-flex align-items-center justify-content-center">
                       <PencilSquare className="me-2" />
                       Edit Profile
                     </Button>
@@ -482,7 +647,7 @@ function Profile() {
                         </div>
                         <h5 className="text-muted mb-3">No orders yet</h5>
                         <p className="text-muted mb-4">Your order history will appear here once you place an order.</p>
-                        <Button variant="warning" className="px-4" href="/kitchen">
+                        <Button variant="warning" className="px-4" href="catlog/kitchen">
                           Start Shopping
                         </Button>
                       </div>
@@ -592,12 +757,12 @@ function Profile() {
       </motion.div>
 
       {/* Edit Profile Modal */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg" centered>
+      <Modal show={showEditModal} onHide={handleCloseEditModal} size="lg" centered>
         <Modal.Header closeButton className="bg-warning bg-opacity-10">
           <Modal.Title>Edit Your Profile</Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-4">
-          <Form>
+          <Form noValidate>
             <Row>
               <Col md={4} className="text-center mb-4 mb-md-0">
                 <div className="position-relative d-inline-block">
@@ -631,14 +796,22 @@ function Profile() {
                 <Row>
                   <Col md={12}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Full Name</Form.Label>
+                      <Form.Label>Full Name <span className="text-danger">*</span></Form.Label>
                       <Form.Control
                         type="text"
                         value={editForm.name}
-                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        onBlur={() => validateField('name')}
                         placeholder="Enter your full name"
-                        className="form-control-lg"
+                        className={`form-control-lg ${formErrors.name ? 'is-invalid' : ''}`}
+                        required
                       />
+                      <Form.Control.Feedback type="invalid">
+                        {formErrors.name}
+                      </Form.Control.Feedback>
+                      <Form.Text className="text-muted">
+                        Your full name as you'd like it to appear on your profile
+                      </Form.Text>
                     </Form.Group>
                   </Col>
                   <Col md={12}>
@@ -647,9 +820,14 @@ function Profile() {
                       <Form.Control
                         type="tel"
                         value={editForm.phone}
-                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                        placeholder="Enter your phone number"
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        onBlur={() => validateField('phone')}
+                        placeholder="Enter your 10-digit phone number"
+                        className={formErrors.phone ? 'is-invalid' : ''}
                       />
+                      <Form.Control.Feedback type="invalid">
+                        {formErrors.phone}
+                      </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                 </Row>
@@ -660,9 +838,14 @@ function Profile() {
                     as="textarea"
                     rows={2}
                     value={editForm.address}
-                    onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    onBlur={() => validateField('address')}
                     placeholder="Enter your address"
+                    className={formErrors.address ? 'is-invalid' : ''}
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {formErrors.address}
+                  </Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group className="mb-3">
@@ -671,11 +854,16 @@ function Profile() {
                     as="textarea"
                     rows={3}
                     value={editForm.bio}
-                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                    onChange={(e) => handleInputChange('bio', e.target.value)}
+                    onBlur={() => validateField('bio')}
                     placeholder="Tell us a little about yourself"
+                    className={formErrors.bio ? 'is-invalid' : ''}
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {formErrors.bio}
+                  </Form.Control.Feedback>
                   <Form.Text className="text-muted">
-                    This will be displayed on your public profile
+                    {editForm.bio ? `${editForm.bio.length}/200 characters` : '0/200 characters'}
                   </Form.Text>
                 </Form.Group>
               </Col>
@@ -683,10 +871,14 @@ function Profile() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="outline-secondary" onClick={() => setShowEditModal(false)}>
+          <Button variant="outline-secondary" onClick={handleCloseEditModal}>
             Cancel
           </Button>
-          <Button variant="warning" onClick={handleUpdateProfile}>
+          <Button 
+            variant="warning" 
+            onClick={handleUpdateProfile}
+            disabled={!editForm.name.trim() || formErrors.name || formErrors.phone || formErrors.address || formErrors.bio}
+          >
             Save Changes
           </Button>
         </Modal.Footer>
@@ -703,13 +895,14 @@ function Profile() {
           </p>
           <Form>
             <Form.Group className="mb-4">
-              <Form.Label>Current Password</Form.Label>
+              <Form.Label>Current Password <span className="text-danger">*</span></Form.Label>
               <div className="input-group">
                 <Form.Control
                   type={passwordVisible.current ? "text" : "password"}
                   value={passwordForm.currentPassword}
                   onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                   placeholder="Enter your current password"
+                  required
                 />
                 <Button 
                   variant="outline-secondary"
@@ -721,13 +914,14 @@ function Profile() {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>New Password</Form.Label>
+              <Form.Label>New Password <span className="text-danger">*</span></Form.Label>
               <div className="input-group">
                 <Form.Control
                   type={passwordVisible.new ? "text" : "password"}
                   value={passwordForm.newPassword}
                   onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                   placeholder="Create a new password"
+                  required
                   className={passwordForm.newPassword ? (passwordStrength >= 75 ? "border-success" : "") : ""}
                 />
                 <Button 
@@ -748,18 +942,24 @@ function Profile() {
                     now={passwordStrength} 
                     className="mt-1"
                   />
+                  {passwordStrength < 75 && (
+                    <small className="text-muted mt-1 d-block">
+                      For a strong password, include uppercase & lowercase letters, numbers, and special characters
+                    </small>
+                  )}
                 </div>
               )}
             </Form.Group>
 
             <Form.Group className="mb-4">
-              <Form.Label>Confirm New Password</Form.Label>
+              <Form.Label>Confirm New Password <span className="text-danger">*</span></Form.Label>
               <div className="input-group">
                 <Form.Control
                   type={passwordVisible.confirm ? "text" : "password"}
                   value={passwordForm.confirmPassword}
                   onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                   placeholder="Confirm your new password"
+                  required
                   className={
                     passwordForm.confirmPassword ? 
                       (passwordsMatch ? "border-success" : "border-danger") : ""
@@ -787,7 +987,7 @@ function Profile() {
           <Button 
             variant="warning" 
             onClick={handleChangePassword}
-            disabled={!passwordForm.currentPassword || !passwordForm.newPassword || !passwordsMatch}
+            disabled={!passwordForm.currentPassword || !passwordForm.newPassword || !passwordsMatch || passwordStrength < 50}
           >
             Update Password
           </Button>

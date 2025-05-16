@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { CartContext } from "../components/Cartcontext";
 import { AuthContext } from "../pages/AuthContext";
+import { useNavigate } from 'react-router-dom'; // Add this import
 import './Cart.css';
 import {
   Button,
@@ -82,8 +83,9 @@ const CheckoutProgressBar = ({ currentStep }) => {
 };
 
 const Cart = () => {
-  const { cartItems, clearCart, updateCartCount } = useContext(CartContext);
+  const { cartItems, clearCart, updateCartCount, removeFromCart, updateCartItemQuantity } = useContext(CartContext);
   const { isAuthenticated, user } = useContext(AuthContext);
+  const navigate = useNavigate(); // Add this line
   const [showCheckout, setShowCheckout] = useState(false);
   const [step, setStep] = useState(1);
   const [address, setAddress] = useState("");
@@ -267,23 +269,13 @@ const Cart = () => {
     cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handleRemoveFromCart = (index) => {
-    const updatedCart = cartItems.filter((_, i) => i !== index);
-    setCartItems(updatedCart);
-    if (isAuthenticated && user) {
-      localStorage.setItem(`cart_${user.id}`, JSON.stringify(updatedCart));
-    }
-    updateCartCount();
+    // Use the context function to remove item
+    removeFromCart(index);
   };
 
   const handleQuantityChange = (index, newQuantity) => {
-    const updatedCart = cartItems.map((item, i) =>
-      i === index ? { ...item, quantity: newQuantity } : item
-    );
-    setCartItems(updatedCart);
-    if (isAuthenticated && user) {
-      localStorage.setItem(`cart_${user.id}`, JSON.stringify(updatedCart));
-    }
-    updateCartCount();
+    // Use the context function to update quantity
+    updateCartItemQuantity(index, newQuantity);
   };
 
   const handleRazorpayPayment = async () => {
@@ -398,6 +390,10 @@ const Cart = () => {
   };
 
   const previousStep = () => setStep(step - 1);
+
+  const handleNavigateToKitchen = () => {
+    navigate('/catlog/kitchen');
+  };
 
   const renderStepContent = () => {
     switch (step) {
@@ -539,8 +535,20 @@ const Cart = () => {
       <h1 className="text-center mb-4">Your Shopping Cart 🛒</h1>
 
       {cartItems.length === 0 ? (
-        <Alert variant="info" className="text-center">
-          Your cart is empty. Start shopping!
+        <Alert variant="info" className="text-center py-5">
+          <div className="mb-3">
+            <BagCheck size={50} className="text-info opacity-75" />
+          </div>
+          <h4>Your cart is empty</h4>
+          <p className="text-muted mb-4">Add some items to your cart and start shopping!</p>
+          <Button 
+            variant="warning" 
+            size="lg" 
+            className="px-4" 
+            onClick={handleNavigateToKitchen}
+          >
+            Start Shopping <ArrowRight className="ms-2" />
+          </Button>
         </Alert>
       ) : (
         <>
@@ -620,7 +628,7 @@ const Cart = () => {
               <h4 className="text-success mb-3">Order Placed Successfully!</h4>
               <p className="mb-1">Order ID: #{Math.random().toString(36).substr(2, 9)}</p>
               <p className="text-muted mb-4">Thank you for shopping with us!</p>
-              <Button variant="outline-primary" onClick={() => window.location.href = '/kitchen'}>
+              <Button variant="outline-primary" onClick={handleNavigateToKitchen}>
                 Continue Shopping
               </Button>
             </div>

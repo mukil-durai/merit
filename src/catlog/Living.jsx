@@ -115,7 +115,7 @@ const living = () => {
     const fetchlivingProducts = async () => {
       try {
         const response = await axios.get("http://localhost:5000/api/products", {
-          params: { category: "livings" },
+          params: { category: "Living" },
         });
         const products = Array.isArray(response.data)
           ? response.data

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import "../css/infra.css";
+
 // Import all images
 import infrastructure1 from '../assets/infra/infrastructure-1.jpg';
 import infrastructure2 from '../assets/infra/infrastructure-2.jpg';

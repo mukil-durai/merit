@@ -5,86 +5,150 @@ export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
-  const { isAuthenticated, user } = useContext(AuthContext);
+  const [cartCount, setCartCount] = useState(0);
+  const { user, isAuthenticated } = useContext(AuthContext);
 
-  // Load cart items from localStorage on initial render or when user changes
+  // Load cart items from localStorage when component mounts or user changes
   useEffect(() => {
-    if (isAuthenticated && user) {
-      const userCart = localStorage.getItem(`cart_${user.id}`);
-      setCartItems(userCart ? JSON.parse(userCart) : []);
-    } else {
-      setCartItems([]);
-    }
-  }, [isAuthenticated, user]);
-
-  const updateCartCount = () => {
-    if (isAuthenticated && user) {
-      const userCart = localStorage.getItem(`cart_${user.id}`);
-      setCartItems(userCart ? JSON.parse(userCart) : []);
-    }
-  };
-
-  const addToCart = (product, navigate) => {
-    if (!isAuthenticated) {
-      navigate("/signin");
-      return;
-    }
-
-    const newCartItem = {
-      _id: product._id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity: 1,
+    const loadCartItems = () => {
+      try {
+        let storedCart = [];
+        if (isAuthenticated && user) {
+          // If user is logged in, get their specific cart
+          storedCart = JSON.parse(localStorage.getItem(`cart_${user.id}`)) || [];
+        } else {
+          // For guest users
+          storedCart = JSON.parse(localStorage.getItem("guestCart")) || [];
+        }
+        setCartItems(storedCart);
+        setCartCount(calculateCartCount(storedCart));
+      } catch (error) {
+        console.error("Error loading cart from localStorage:", error);
+        setCartItems([]);
+        setCartCount(0);
+      }
     };
 
-    const userId = user.id;
-    let userCart = JSON.parse(localStorage.getItem(`cart_${userId}`)) || [];
-    
-    const existingItemIndex = userCart.findIndex(item => item._id === newCartItem._id);
+    loadCartItems();
+  }, [isAuthenticated, user]);
 
-    if (existingItemIndex !== -1) {
-      userCart[existingItemIndex].quantity += 1;
-    } else {
-      userCart.push(newCartItem);
-    }
+  // Calculate total items in cart
+  const calculateCartCount = (items) => {
+    return items.reduce((count, item) => count + (item.quantity || 1), 0);
+  };
 
-    try {
-      localStorage.setItem(`cart_${userId}`, JSON.stringify(userCart));
-      setCartItems(userCart);
-    } catch (e) {
-      if (
-        e instanceof DOMException &&
-        (e.name === "QuotaExceededError" || e.code === 22)
-      ) {
-        // Optionally: show a toast or alert here
-        // For now, just log and do not update state
-        // Optionally, you could clear cart or notify user
-        // alert("Your cart is full. Please remove some items or clear storage.");
-        console.error("Cart storage quota exceeded.", e);
-        // Optionally, throw or handle for UI
-        throw e;
+  // Add item to cart
+  const addToCart = (item) => {
+    setCartItems((prevItems) => {
+      // Check if item already exists in cart
+      const existingItemIndex = prevItems.findIndex(
+        (cartItem) => cartItem._id === item._id
+      );
+
+      let updatedItems;
+      if (existingItemIndex >= 0) {
+        // If item exists, increase quantity
+        updatedItems = [...prevItems];
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: (updatedItems[existingItemIndex].quantity || 1) + 1,
+        };
       } else {
-        throw e;
+        // If item doesn't exist, add with quantity 1
+        updatedItems = [...prevItems, { ...item, quantity: 1 }];
       }
+
+      // Save to localStorage
+      saveCartToLocalStorage(updatedItems);
+      
+      // Update cart count
+      setCartCount(calculateCartCount(updatedItems));
+      
+      return updatedItems;
+    });
+  };
+
+  // Remove item from cart
+  const removeFromCart = (index) => {
+    setCartItems((prevItems) => {
+      const updatedItems = prevItems.filter((_, i) => i !== index);
+      
+      // Save to localStorage
+      saveCartToLocalStorage(updatedItems);
+      
+      // Update cart count
+      setCartCount(calculateCartCount(updatedItems));
+      
+      return updatedItems;
+    });
+  };
+
+  // Update cart item quantity
+  const updateCartItemQuantity = (index, newQuantity) => {
+    setCartItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index] = {
+        ...updatedItems[index],
+        quantity: newQuantity,
+      };
+      
+      // Save to localStorage
+      saveCartToLocalStorage(updatedItems);
+      
+      // Update cart count
+      setCartCount(calculateCartCount(updatedItems));
+      
+      return updatedItems;
+    });
+  };
+
+  // Save cart to localStorage
+  const saveCartToLocalStorage = (items) => {
+    try {
+      if (isAuthenticated && user) {
+        localStorage.setItem(`cart_${user.id}`, JSON.stringify(items));
+      } else {
+        localStorage.setItem("guestCart", JSON.stringify(items));
+      }
+    } catch (error) {
+      console.error("Error saving cart to localStorage:", error);
     }
   };
 
+  // Clear cart
   const clearCart = () => {
-    if (isAuthenticated && user) {
-      localStorage.removeItem(`cart_${user.id}`);
-      setCartItems([]);
+    setCartItems([]);
+    setCartCount(0);
+    
+    // Clear from localStorage
+    try {
+      if (isAuthenticated && user) {
+        localStorage.removeItem(`cart_${user.id}`);
+      } else {
+        localStorage.removeItem("guestCart");
+      }
+    } catch (error) {
+      console.error("Error clearing cart from localStorage:", error);
     }
+  };
+
+  // Update cart count manually if needed
+  const updateCartCount = () => {
+    setCartCount(calculateCartCount(cartItems));
   };
 
   return (
-    <CartContext.Provider value={{ 
-      cartItems, 
-      setCartItems, 
-      addToCart, 
-      updateCartCount,
-      clearCart 
-    }}>
+    <CartContext.Provider
+      value={{
+        cartItems,
+        cartCount,
+        addToCart,
+        removeFromCart,
+        updateCartItemQuantity,
+        clearCart,
+        updateCartCount,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

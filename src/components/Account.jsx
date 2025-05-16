@@ -22,20 +22,84 @@ const Account = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    // Clear validation errors when typing
-    setValidationErrors({
-      ...validationErrors,
-      [name]: ""
-    });
-    if (name === "email") setEmailError("");
+    
+    // Validate fields on change
+    const newErrors = { ...validationErrors };
+    
+    if (name === "name") {
+      if (!value.trim()) {
+        newErrors.name = "Please enter your name";
+      } else if (value.length < 2) {
+        newErrors.name = "Name must be at least 2 characters long";
+      } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+        newErrors.name = "Name should only contain letters and spaces";
+      } else {
+        newErrors.name = "";
+      }
+    }
+    
+    if (name === "email") {
+      if (!value.trim()) {
+        newErrors.email = "Please enter your email";
+      } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
+        newErrors.email = "Please enter a valid email address";
+      } else {
+        newErrors.email = "";
+      }
+      setEmailError("");
+    }
+    
+    if (name === "password") {
+      if (!value.trim()) {
+        newErrors.password = "Please enter your password";
+      } else if (value.length < 8) {
+        newErrors.password = "Password must be at least 8 characters long";
+      } else if (!/(?=.*[a-z])(?=.*[A-Z])/.test(value)) {
+        newErrors.password = "Password must contain both uppercase and lowercase letters";
+      } else if (!/(?=.*\d)/.test(value)) {
+        newErrors.password = "Password must contain at least one number";
+      } else if (!/(?=.*[@$!%*?&])/.test(value)) {
+        newErrors.password = "Password must contain at least one special character (@$!%*?&)";
+      } else {
+        newErrors.password = "";
+      }
+    }
+    
+    setValidationErrors(newErrors);
     setError("");
   };
 
   const validateForm = () => {
     const errors = {};
-    if (!formData.name.trim()) errors.name = "Please enter your name";
-    if (!formData.email.trim()) errors.email = "Please enter your email";
-    if (!formData.password.trim()) errors.password = "Please enter your password";
+    
+    // Name validation
+    if (!formData.name.trim()) {
+      errors.name = "Please enter your name";
+    } else if (formData.name.length < 2) {
+      errors.name = "Name must be at least 2 characters long";
+    } else if (!/^[a-zA-Z\s]+$/.test(formData.name)) {
+      errors.name = "Name should only contain letters and spaces";
+    }
+    
+    // Email validation
+    if (!formData.email.trim()) {
+      errors.email = "Please enter your email";
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+    
+    // Password validation
+    if (!formData.password.trim()) {
+      errors.password = "Please enter your password";
+    } else if (formData.password.length < 8) {
+      errors.password = "Password must be at least 8 characters long";
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])/.test(formData.password)) {
+      errors.password = "Password must contain both uppercase and lowercase letters";
+    } else if (!/(?=.*\d)/.test(formData.password)) {
+      errors.password = "Password must contain at least one number";
+    } else if (!/(?=.*[@$!%*?&])/.test(formData.password)) {
+      errors.password = "Password must contain at least one special character (@$!%*?&)";
+    }
     
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;

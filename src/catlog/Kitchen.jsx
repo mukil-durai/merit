@@ -1101,7 +1101,8 @@ const Kitchen = () => {
                 <h5 className="mb-0 ms-3">Complete Payment</h5>
               </div>
               
-              <div className="text-center payment-info">
+              <div className="text-center pa
+              yment-info">
                 <div className="mb-4">
                   <div className="total-amount-circle">
                     <div>
@@ -2198,3 +2199,4 @@ const Kitchen = () => {
 };
 
 export default Kitchen;
+  

@@ -10,6 +10,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import ScrollToTop from "./components/ScrollToTop";
+import Wishlist from "./components/Wishlist"; // Import Wishlist
 
 // Pages
 import Home from "./pages/Home";
@@ -66,6 +67,7 @@ const App = () => {
               <Route path="/cart" element={<AnimatedComponent><Cart /></AnimatedComponent>} />
               <Route path="/profile" element={<AnimatedComponent><Profile /></AnimatedComponent>} />
               <Route path="/product/:productId" element={<ProductDetails />} /> {/* Add this route */}
+              <Route path="/wishlist" element={<Wishlist />} /> {/* Add this route */}
             </Routes>
             <Footer />
           </ScrollToTop>

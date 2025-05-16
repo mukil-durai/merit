@@ -13,7 +13,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import loaderImg from "../assets/loader.svg";
-import heroVideo from "../assets/video/Knit Fabric Manufacturing Process With Circular Knitting Machines.mp4";
 import kitchenImg from "../assets/kitchen-linen.jpg";
 import shoppingBagImg from "../assets/shopping-bags.jpg";
 import livingLinenImg from "../assets/living-linen.jpg";
@@ -188,7 +187,7 @@ const Home = () => {
                 className="position-absolute w-100 h-100"
                 style={{ objectFit: "cover" }}
               >
-                <source src={heroVideo} type="video/mp4" />
+                <source src="/assets/Knit Fabric Manufacturing Process With Circular Knitting Machines(1)(1).mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
               <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>

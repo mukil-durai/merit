@@ -104,8 +104,8 @@ const SignIn = () => {
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
-      <div className="card shadow-lg p-4 w-50">
+    <div className="container d-flex justify-content-center align-items-center min-vh-100 py-5">
+      <div className="card shadow-lg p-3 p-md-4 w-100 mx-3" style={{ maxWidth: "500px" }}>
         <h2 className="text-center mb-4">Sign In</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
@@ -113,7 +113,7 @@ const SignIn = () => {
             <input 
               type="email" 
               name="email" 
-              className={`form-control ${validationErrors.email ? 'is-invalid' : ''}`}
+              className={`form-control form-control-lg ${validationErrors.email ? 'is-invalid' : ''}`}
               value={formData.email} 
               onChange={handleChange} 
               required 
@@ -127,7 +127,7 @@ const SignIn = () => {
               <input 
                 type={showPassword ? "text" : "password"} 
                 name="password" 
-                className={`form-control ${validationErrors.password ? 'is-invalid' : ''}`}
+                className={`form-control form-control-lg ${validationErrors.password ? 'is-invalid' : ''}`}
                 value={formData.password} 
                 onChange={handleChange} 
                 required 
@@ -141,7 +141,7 @@ const SignIn = () => {
 
           {error && <div className="alert alert-danger">{error}</div>}
 
-          <button type="submit" className="btn btn-warning w-100" disabled={loading}>
+          <button type="submit" className="btn btn-warning w-100 py-2 fs-5" disabled={loading}>
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>

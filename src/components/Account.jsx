@@ -139,8 +139,8 @@ const Account = () => {
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
-      <div className="card shadow-lg p-4 w-50">
+    <div className="container d-flex justify-content-center align-items-center min-vh-100 py-5">
+      <div className="card shadow-lg p-3 p-md-4 w-100 mx-3" style={{ maxWidth: "500px" }}>
         <h2 className="text-center mb-4">Sign Up</h2>
         <form onSubmit={handleSubmit}>
           {/* Name Field */}
@@ -204,7 +204,7 @@ const Account = () => {
 
           {error && <div className="alert alert-danger">{error}</div>}
 
-          <button type="submit" className="btn btn-warning w-100" disabled={loading}>
+          <button type="submit" className="btn btn-warning w-100 py-2 fs-5" disabled={loading}>
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>

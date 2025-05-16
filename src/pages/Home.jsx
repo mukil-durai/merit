@@ -187,7 +187,7 @@ const Home = () => {
                 className="position-absolute w-100 h-100"
                 style={{ objectFit: "cover" }}
               >
-                <source src="/assets/Knit Fabric Manufacturing Process With Circular Knitting Machines(1)(1).mp4" type="video/mp4" />
+                <source src={import.meta.env.BASE_URL + "assets/Knit-Fabric.mp4"} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
               <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>

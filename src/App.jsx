@@ -43,14 +43,14 @@ const App = () => {
   }, []);
 
   return (
-    <Router>
+    <Router basename="/merit">
       <AuthProvider>
         <CartProvider> {/* Wrap the app with CartProvider */}
           <ScrollToTop>
             <Navbar /> {/* Navbar will access cart count from CartContext */}
             <Routes>
-              <Route path="/" element={<AnimatedComponent><Home /></AnimatedComponent>} />
-              <Route path="/home" element={<AnimatedComponent><Home /></AnimatedComponent>} />
+              <Route path="/" element={<AnimatedComponent><Home/></AnimatedComponent>} />
+              <Route path="/home" element={<AnimatedComponent><Home/></AnimatedComponent>} />
               <Route path="/about" element={<AnimatedComponent><About /></AnimatedComponent>} />
               <Route path="/process" element={<AnimatedComponent><Process /></AnimatedComponent>} />
               <Route path="/contact" element={<AnimatedComponent><Contact /></AnimatedComponent>} />

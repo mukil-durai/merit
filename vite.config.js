@@ -3,10 +3,11 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  // Removing base path for now
+  // Adding base path back
+  base: "/merit/",
   
   plugins: [react()],
-  base:"/merit",
+  
   
   resolve: {
     alias: {

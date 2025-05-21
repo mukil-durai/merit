@@ -20,6 +20,7 @@ import tableLinenImg from "../assets/table-linen.jpg";
 import homeImage from "../assets/home.jpg";
 import aboutImage from "../assets/home2.jpg";
 import "../css/home.css";
+import knitFabricVideo from "../assets/kitchen/knitfabric.mp4";
 
 const Home = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -172,8 +173,8 @@ const Home = () => {
     { icon: <FaCheckCircle />, text: "100% Quality Assurance" },
   ];
 
-  // Use the correct base path and filename for GitHub Pages deployment
-  const videoSrc = "/merit/knitfabric.mp4";
+  // Use imported video for local asset
+  const videoSrc = knitFabricVideo;
 
   return (
     <>

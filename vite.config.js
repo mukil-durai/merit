@@ -31,10 +31,19 @@ export default defineConfig({
   assetsInclude: ['**/*.mp4', '**/*.mov', '**/*.webm', '**/*.ogg', '**/*.mp3'],
   
   build: {
+    chunkSizeWarningLimit: 1000, // Optional: Increase limit to suppress warning
     assetsDir: 'assets',
     rollupOptions: {
       output: {
-        manualChunks: undefined
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) return 'vendor-react';
+            if (id.includes('framer-motion')) return 'vendor-framer-motion';
+            if (id.includes('axios')) return 'vendor-axios';
+            // Add more libraries as needed
+            return 'vendor';
+          }
+        }
       }
     }
   }

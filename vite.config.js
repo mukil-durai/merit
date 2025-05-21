@@ -27,12 +27,8 @@ export default defineConfig({
   // Define public directory for static assets
   publicDir: 'public',
   
-  // Ensure proper MIME types for media files
-  assetsInclude: ['**/*.mp4', '**/*.mov', '**/*.webm', '**/*.ogg', '**/*.mp3'],
-  
   build: {
     chunkSizeWarningLimit: 1000, // Optional: Increase limit to suppress warning
-    assetsDir: 'assets',
     rollupOptions: {
       output: {
         manualChunks(id) {

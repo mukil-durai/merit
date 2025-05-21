@@ -172,8 +172,8 @@ const Home = () => {
     { icon: <FaCheckCircle />, text: "100% Quality Assurance" },
   ];
 
-  // Use the correct base path for GitHub Pages deployment
-  const videoSrc = "/merit/assets/Knit-Fabric.mp4";
+  // Use the correct base path and filename for GitHub Pages deployment
+  const videoSrc = "/merit/knitfabric.mp4";
 
   return (
     <>

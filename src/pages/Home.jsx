@@ -172,11 +172,8 @@ const Home = () => {
     { icon: <FaCheckCircle />, text: "100% Quality Assurance" },
   ];
 
-  // Determine video source based on environment
-  const videoSrc =
-    window.location.hostname === "localhost"
-      ? import.meta.env.BASE_URL + "assets/Knit-Fabric.mp4"
-      : "https://mukil-durai.github.io/merit/assets/Knit-Fabric.mp4";
+  // Always use the public path for assets in the public folder
+  const videoSrc = "/assets/Knit-Fabric.mp4";
 
   return (
     <>

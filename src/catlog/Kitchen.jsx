@@ -139,6 +139,7 @@ const Kitchen = () => {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [paymentInProgress, setPaymentInProgress] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("online"); // "online" or "cod" (Cash on Delivery)
+  const [detailsQuantity, setDetailsQuantity] = useState(1);
 
   const { cartItems, addToCart } = useContext(CartContext);
   const { isAuthenticated, user } = useContext(AuthContext);
@@ -394,9 +395,9 @@ const Kitchen = () => {
     }
   };
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = (product, quantity = 1) => {
     try {
-      addToCart(product, navigate);
+      addToCart({ ...product, quantity }, navigate);
       toast.success("Item added to cart successfully!");
     } catch (error) {
       if (
@@ -411,7 +412,7 @@ const Kitchen = () => {
     }
   };
 
-  const handleBuyNow = (product) => {
+  const handleBuyNow = (product, quantity = 1) => {
     if (!isAuthenticated) {
       toast.warning("Please login to proceed!");
       return;
@@ -424,7 +425,8 @@ const Kitchen = () => {
     
     setSelectedProduct({
       ...product,
-      image: imageData
+      image: imageData,
+      quantity // Pass selected quantity
     });
     setShowCheckout(true);
     setStep(1);
@@ -657,6 +659,7 @@ const Kitchen = () => {
   const handleViewDetails = (product) => {
     setDetailsProduct(product);
     setShowDetailsModal(true);
+    setDetailsQuantity(1); // Reset quantity to 1 when opening modal
   };
 
   const handleCloseDetailsModal = () => {
@@ -1101,8 +1104,7 @@ const Kitchen = () => {
                 <h5 className="mb-0 ms-3">Complete Payment</h5>
               </div>
               
-              <div className="text-center pa
-              yment-info">
+              <div className="text-center payment-info">
                 <div className="mb-4">
                   <div className="total-amount-circle">
                     <div>
@@ -1818,6 +1820,7 @@ const Kitchen = () => {
                       e.target.src = "https://via.placeholder.com/400?text=No+Image";
                     }}
                   />
+                  {/* Only show the main image as thumbnail if no additional images */}
                   <div className="product-thumbnails">
                     <div className="thumbnail active">
                       <img
@@ -1833,14 +1836,8 @@ const Kitchen = () => {
                         }}
                       />
                     </div>
-                    {[1, 2, 3].map((_, idx) => (
-                      <div key={idx} className="thumbnail">
-                        <img
-                          src={`https://via.placeholder.com/80?text=View+${idx + 1}`}
-                          alt={`View ${idx + 1}`}
-                        />
-                      </div>
-                    ))}
+                    {/* Remove the placeholder thumbnails for View 1, View 2, etc. */}
+                    {/* If you have multiple images in the future, map and render them here */}
                   </div>
                 </div>
               </Col>
@@ -1921,25 +1918,21 @@ const Kitchen = () => {
                       variant="outline-secondary" 
                       size="sm" 
                       className="quantity-btn"
-                      onClick={() => {
-                        // Handle decrement
-                      }}
+                      onClick={() => setDetailsQuantity(q => Math.max(1, q - 1))}
                     >
                       -
                     </Button>
                     <input
                       type="number"
                       className="quantity-input"
-                      value={1}
+                      value={detailsQuantity}
                       readOnly
                     />
                     <Button 
                       variant="outline-secondary" 
                       size="sm" 
                       className="quantity-btn"
-                      onClick={() => {
-                        // Handle increment
-                      }}
+                      onClick={() => setDetailsQuantity(q => q + 1)}
                     >
                       +
                     </Button>
@@ -1950,7 +1943,7 @@ const Kitchen = () => {
                   <Button
                     variant="outline-primary"
                     className="btn-add-cart w-100"
-                    onClick={() => handleAddToCart(detailsProduct)}
+                    onClick={() => handleAddToCart(detailsProduct, detailsQuantity)}
                   >
                     <CartPlus size={18} className="me-2" /> Add to Cart
                   </Button>
@@ -1959,7 +1952,7 @@ const Kitchen = () => {
                     className="btn-buy-now w-100"
                     onClick={() => {
                       handleCloseDetailsModal();
-                      handleBuyNow(detailsProduct);
+                      handleBuyNow(detailsProduct, detailsQuantity);
                     }}
                   >
                     Buy Now
@@ -2199,4 +2192,3 @@ const Kitchen = () => {
 };
 
 export default Kitchen;
-  

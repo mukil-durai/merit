@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { FaIndustry, FaPalette, FaPrint, FaTshirt, FaSpinner, FaPen } from "react-icons/fa";
+import { FaIndustry, FaPalette, FaPrint, FaTshirt, FaSpinner, FaPen, FaTools, FaEdit, FaFillDrip } from "react-icons/fa";
+import { MdDesignServices, MdOutlineColorLens, MdPrecisionManufacturing } from "react-icons/md";
+import { BsScissors, BsThreads } from "react-icons/bs";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -11,48 +13,166 @@ const processes = [
     description: "Weaving is the process of interlacing two sets of yarns or threads at right angles to create a fabric, and it is an important part of home textile manufacturing as it transforms the yarns produced through spinning into a usable fabric.",
     color: "#FF6B6B",
     icon: <FaSpinner className="process-icon-spin" size={30} />,
-    imageUrl: "/api/placeholder/600/400",
-    tag: "Foundation"
+    tag: "Foundation",
+    illustration: (color) => (
+      <div className="process-illustration weave-illustration">
+        <div className="threads-container">
+          {[...Array(5)].map((_, i) => (
+            <div key={`v-${i}`} className="thread vertical" style={{left: `${i * 20}%`, backgroundColor: color}}></div>
+          ))}
+          {[...Array(5)].map((_, i) => (
+            <div key={`h-${i}`} className="thread horizontal" style={{top: `${i * 20}%`, backgroundColor: color}}></div>
+          ))}
+        </div>
+      </div>
+    )
   },
   {
     title: "DYEING",
     description: "Dyeing is the process of adding color to textiles through the use of dyes, and it is an important part of home textile manufacturing as it allows for the creation of a wide range of colors and patterns in the finished products.",
     color: "#4ECDC4",
     icon: <FaPalette size={30} />,
-    imageUrl: "/api/placeholder/600/400",
-    tag: "Coloration"
+    tag: "Coloration",
+    illustration: (color) => (
+      <div className="process-illustration dyeing-illustration">
+        <div className="dye-container">
+          <div className="dye-liquid" style={{backgroundColor: color}}></div>
+          <div className="dye-bubbles">
+            {[...Array(8)].map((_, i) => (
+              <div 
+                key={`bubble-${i}`} 
+                className="bubble" 
+                style={{
+                  left: `${Math.random() * 90}%`,
+                  top: `${Math.random() * 90}%`,
+                  animationDelay: `${Math.random() * 3}s`,
+                  backgroundColor: color
+                }}
+              ></div>
+            ))}
+          </div>
+          <div className="fabric-piece"></div>
+        </div>
+      </div>
+    )
   },
   {
     title: "DESIGN",
     description: "Designing is the process of creating a concept or plan for a product, and it is an important part of home textile manufacturing as it helps to determine the aesthetic and functional characteristics of the finished products.",
     color: "#FF9F1C",
     icon: <FaPen size={30} />,
-    imageUrl: "/api/placeholder/600/400",
-    tag: "Creativity"
+    tag: "Creativity",
+    illustration: (color) => (
+      <div className="process-illustration design-illustration">
+        <div className="design-board">
+          <div className="design-elements">
+            {[...Array(3)].map((_, i) => (
+              <div key={`line-${i}`} className="design-line" style={{
+                width: `${40 + Math.random() * 50}%`,
+                left: `${Math.random() * 30}%`,
+                top: `${20 + i * 30}%`,
+                backgroundColor: color
+              }}></div>
+            ))}
+            <div className="design-circle" style={{borderColor: color}}></div>
+            <div className="design-square" style={{borderColor: color}}></div>
+          </div>
+          <div className="design-pen" style={{backgroundColor: color}}></div>
+        </div>
+      </div>
+    )
   },
   {
     title: "PRINTING",
     description: "Printing is the process of transferring a design or pattern onto a textile using a printing medium such as ink or dye, and it is often used in home textile manufacturing to add visual interest and variety to the finished products.",
     color: "#6A0572",
     icon: <FaPrint size={30} />,
-    imageUrl: "/api/placeholder/600/400",
-    tag: "Patterning"
+    tag: "Patterning",
+    illustration: (color) => (
+      <div className="process-illustration printing-illustration">
+        <div className="printer">
+          <div className="printer-head" style={{backgroundColor: color}}>
+            <div className="printer-light"></div>
+          </div>
+          <div className="printer-base">
+            <div className="printer-pattern">
+              {[...Array(4)].map((_, i) => (
+                <div key={`pattern-${i}`} className="pattern-row">
+                  {[...Array(8)].map((_, j) => (
+                    <div 
+                      key={`dot-${i}-${j}`} 
+                      className="pattern-dot" 
+                      style={{
+                        opacity: Math.random() > 0.5 ? 0.8 : 0.2,
+                        backgroundColor: color
+                      }}
+                    ></div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   },
   {
     title: "STITCHING",
     description: "Stitching is the process of assembling fabric pieces together to create a final product, ensuring durability and a neat finish in textile manufacturing.",
     color: "#1A535C",
     icon: <FaTshirt size={30} />,
-    imageUrl: "/api/placeholder/600/400",
-    tag: "Assembly"
+    tag: "Assembly",
+    illustration: (color) => (
+      <div className="process-illustration stitching-illustration">
+        <div className="stitch-container">
+          <div className="fabric-pieces">
+            <div className="fabric top-piece"></div>
+            <div className="fabric bottom-piece"></div>
+          </div>
+          <div className="stitch-line">
+            {[...Array(12)].map((_, i) => (
+              <div 
+                key={`stitch-${i}`} 
+                className="stitch" 
+                style={{backgroundColor: color}}
+              ></div>
+            ))}
+          </div>
+          <div className="needle" style={{borderColor: color}}>
+            <div className="needle-eye" style={{borderColor: color}}></div>
+          </div>
+        </div>
+      </div>
+    )
   },
   {
     title: "EMBROIDERY",
     description: "Embroidery is the process of decorating a fabric with needle and thread by creating a design or pattern on the surface of the fabric, and it is often used in home textile manufacturing to add visual interest and variety to the finished products.",
     color: "#F46036",
     icon: <FaIndustry size={30} />,
-    imageUrl: "/api/placeholder/600/400",
-    tag: "Detailing"
+    tag: "Detailing",
+    illustration: (color) => (
+      <div className="process-illustration embroidery-illustration">
+        <div className="embroidery-hoop">
+          <div className="hoop-ring"></div>
+          <div className="embroidery-design">
+            <div className="flower-center" style={{backgroundColor: color}}></div>
+            {[...Array(8)].map((_, i) => (
+              <div 
+                key={`petal-${i}`}
+                className="flower-petal" 
+                style={{
+                  transform: `rotate(${i * 45}deg)`,
+                  backgroundColor: color
+                }}
+              ></div>
+            ))}
+            <div className="embroidery-stitch horizontal" style={{backgroundColor: color}}></div>
+            <div className="embroidery-stitch vertical" style={{backgroundColor: color}}></div>
+          </div>
+        </div>
+      </div>
+    )
   },
 ];
 
@@ -149,9 +269,8 @@ const Process = () => {
                   
                   <div className="row align-items-center">
                     <div className="col-md-5">
-                      <div className="process-image-container">
-                        <img src={process.imageUrl} alt={process.title} className="process-image" />
-                      </div>
+                      {/* Replace image with SVG illustration */}
+                      {process.illustration(process.color)}
                     </div>
                     <div className="col-md-7">
                       <p className="process-description">{process.description}</p>
@@ -412,23 +531,6 @@ const Process = () => {
           margin: 0;
         }
         
-        .process-image-container {
-          border-radius: 12px;
-          overflow: hidden;
-          margin-bottom: 1rem;
-        }
-        
-        .process-image {
-          width: 100%;
-          height: auto;
-          transition: transform 0.5s ease;
-          border-radius: 8px;
-        }
-        
-        .process-content:hover .process-image {
-          transform: scale(1.05);
-        }
-        
         .process-description {
           margin: 0;
           color: #666;
@@ -442,6 +544,404 @@ const Process = () => {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+
+        /* Process Illustrations */
+        .process-illustration {
+          height: 180px;
+          width: 100%;
+          background-color: #f8f9fa;
+          border-radius: 12px;
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1rem;
+          box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        /* Weave Illustration */
+        .weave-illustration .threads-container {
+          position: relative;
+          width: 90%;
+          height: 80%;
+          overflow: hidden;
+        }
+
+        .thread {
+          position: absolute;
+          border-radius: 2px;
+        }
+
+        .thread.vertical {
+          width: 6px;
+          height: 100%;
+          animation: weaveVertical 3s infinite ease-in-out;
+        }
+
+        .thread.horizontal {
+          width: 100%;
+          height: 6px;
+          animation: weaveHorizontal 3s infinite ease-in-out;
+        }
+
+        @keyframes weaveVertical {
+          0%, 100% { transform: translateY(-5px); }
+          50% { transform: translateY(5px); }
+        }
+
+        @keyframes weaveHorizontal {
+          0%, 100% { transform: translateX(-5px); }
+          50% { transform: translateX(5px); }
+        }
+
+        /* Dyeing Illustration */
+        .dye-container {
+          width: 90%;
+          height: 80%;
+          position: relative;
+          overflow: hidden;
+          border-radius: 8px;
+          border: 2px solid #ddd;
+        }
+
+        .dye-liquid {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 70%;
+          opacity: 0.7;
+          animation: boil 2s infinite ease-in-out;
+        }
+
+        .bubble {
+          position: absolute;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          opacity: 0.6;
+          animation: bubbleRise 3s infinite ease-out;
+        }
+
+        .fabric-piece {
+          position: absolute;
+          width: 80%;
+          height: 20px;
+          top: 40%;
+          left: 10%;
+          background-color: #fff;
+          border-radius: 3px;
+          animation: dip 2s infinite ease-in-out;
+        }
+
+        @keyframes boil {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+        }
+
+        @keyframes bubbleRise {
+          0% { transform: translateY(0) scale(1); opacity: 0.6; }
+          100% { transform: translateY(-60px) scale(0); opacity: 0; }
+        }
+
+        @keyframes dip {
+          0%, 100% { transform: translateY(0) rotate(1deg); }
+          50% { transform: translateY(5px) rotate(-1deg); }
+        }
+
+        /* Design Illustration */
+        .design-board {
+          width: 90%;
+          height: 80%;
+          background-color: white;
+          position: relative;
+          border-radius: 4px;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .design-elements {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+        }
+
+        .design-line {
+          position: absolute;
+          height: 3px;
+          border-radius: 4px;
+        }
+
+        .design-circle {
+          position: absolute;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          border: 2px solid;
+          top: 35%;
+          right: 20%;
+          animation: pulse 2s infinite ease-in-out;
+        }
+
+        .design-square {
+          position: absolute;
+          width: 25px;
+          height: 25px;
+          border: 2px solid;
+          bottom: 25%;
+          right: 30%;
+          animation: rotate 4s infinite linear;
+        }
+
+        .design-pen {
+          position: absolute;
+          width: 4px;
+          height: 20px;
+          bottom: 10%;
+          right: 10%;
+          border-radius: 1px;
+          transform: rotate(-45deg);
+          animation: draw 3s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+        }
+
+        @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes draw {
+          0%, 100% { transform: translate(0, 0) rotate(-45deg); }
+          50% { transform: translate(-20px, -20px) rotate(-45deg); }
+        }
+
+        /* Printing Illustration */
+        .printer {
+          width: 90%;
+          height: 80%;
+          position: relative;
+        }
+
+        .printer-head {
+          position: absolute;
+          top: 0;
+          left: 10%;
+          width: 80%;
+          height: 15px;
+          border-radius: 4px;
+          animation: printHead 3s infinite ease-in-out;
+        }
+
+        .printer-light {
+          position: absolute;
+          bottom: 5px;
+          left: 10px;
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background-color: rgba(255,255,255,0.8);
+          animation: blink 1s infinite;
+        }
+
+        .printer-base {
+          position: absolute;
+          top: 20px;
+          left: 0;
+          width: 100%;
+          height: calc(100% - 20px);
+          background-color: #f0f0f0;
+          border-radius: 4px;
+          overflow: hidden;
+        }
+
+        .printer-pattern {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          width: calc(100% - 20px);
+          height: calc(100% - 20px);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-around;
+        }
+
+        .pattern-row {
+          display: flex;
+          justify-content: space-around;
+        }
+
+        .pattern-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+        }
+
+        @keyframes printHead {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(calc(100% - 15px)); }
+        }
+
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.2; }
+        }
+
+        /* Stitching Illustration */
+        .stitch-container {
+          width: 90%;
+          height: 80%;
+          position: relative;
+        }
+
+        .fabric-pieces {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+        }
+
+        .fabric {
+          position: absolute;
+          height: 40%;
+          width: 80%;
+          left: 10%;
+          background-color: #f5f5f5;
+          border-radius: 3px;
+        }
+
+        .top-piece {
+          top: 10%;
+        }
+
+        .bottom-piece {
+          bottom: 10%;
+        }
+
+        .stitch-line {
+          position: absolute;
+          top: 50%;
+          left: 10%;
+          width: 80%;
+          height: 2px;
+          transform: translateY(-50%);
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .stitch {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          animation: stitchPulse 2s infinite;
+        }
+
+        .needle {
+          position: absolute;
+          top: 50%;
+          right: 20%;
+          width: 2px;
+          height: 20px;
+          border-left: 2px solid;
+          transform: translateY(-50%);
+          animation: needleMove 1.5s infinite ease-in-out;
+        }
+
+        .needle-eye {
+          position: absolute;
+          top: 5px;
+          left: -4px;
+          width: 6px;
+          height: 3px;
+          border: 1px solid;
+          border-radius: 3px;
+        }
+
+        @keyframes stitchPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+
+        @keyframes needleMove {
+          0%, 100% { transform: translateY(-50%); }
+          50% { transform: translateY(-20px); }
+        }
+
+        /* Embroidery Illustration */
+        .embroidery-hoop {
+          width: 80%;
+          height: 80%;
+          position: relative;
+          border: 8px solid #ddbea9;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .hoop-ring {
+          position: absolute;
+          width: 88%;
+          height: 88%;
+          border: 3px solid #b38b6d;
+          border-radius: 50%;
+        }
+
+        .embroidery-design {
+          width: 70%;
+          height: 70%;
+          position: relative;
+        }
+
+        .flower-center {
+          position: absolute;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .flower-petal {
+          position: absolute;
+          width: 8px;
+          height: 30px;
+          border-radius: 50%;
+          top: 50%;
+          left: 50%;
+          transform-origin: center bottom;
+          animation: sway 4s infinite ease-in-out;
+        }
+
+        .embroidery-stitch {
+          position: absolute;
+          background-color: #ff6b6b;
+        }
+
+        .embroidery-stitch.horizontal {
+          width: 50%;
+          height: 2px;
+          top: 30%;
+          left: 25%;
+        }
+
+        .embroidery-stitch.vertical {
+          width: 2px;
+          height: 40%;
+          top: 40%;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+
+        @keyframes sway {
+          0%, 100% { transform-origin: center bottom; transform: rotate(var(--rotation)) translateY(0); }
+          50% { transform-origin: center bottom; transform: rotate(var(--rotation)) translateY(-2px); }
         }
 
         /* Info Card */

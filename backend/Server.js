@@ -133,14 +133,53 @@ const verifyToken = (req, res, next) => {
 
 // Routes
 app.post('/api/create-order', async (req, res) => {
+  console.log('Creating Razorpay order with request body:', req.body);
   const { amount } = req.body;
+  
+  // Validate amount
+  if (!amount) {
+    console.error('Missing amount parameter');
+    return res.status(400).json({ error: 'Amount is required' });
+  }
+  
+  // Ensure amount is a number
+  const orderAmount = parseInt(amount, 10);
+  if (isNaN(orderAmount) || orderAmount <= 0) {
+    console.error('Invalid amount value:', amount);
+    return res.status(400).json({ error: 'Invalid amount value' });
+  }
+  
+  // Verify Razorpay configuration
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    console.error('Razorpay credentials are missing');
+    return res.status(500).json({ error: 'Payment gateway configuration error' });
+  }
+  
   try {
-    const options = { amount, currency: 'INR', receipt: `receipt_${Date.now()}` };
+    console.log(`Attempting to create Razorpay order for amount: ${orderAmount}`);
+    const options = { 
+      amount: orderAmount, 
+      currency: 'INR', 
+      receipt: `receipt_${Date.now()}` 
+    };
+    
+    console.log('Razorpay order options:', options);
     const order = await razorpay.orders.create(options);
-    res.json({ orderId: order.id, key: process.env.RAZORPAY_KEY_ID, amount: order.amount, currency: order.currency });
+    console.log('Razorpay order created successfully:', order);
+    
+    res.json({ 
+      orderId: order.id, 
+      key: process.env.RAZORPAY_KEY_ID, 
+      amount: order.amount, 
+      currency: order.currency 
+    });
   } catch (error) {
     console.error('Error creating Razorpay order:', error);
-    res.status(500).send('Failed to create Razorpay order.');
+    // Return a more detailed error response
+    res.status(500).json({
+      error: 'Failed to create Razorpay order',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

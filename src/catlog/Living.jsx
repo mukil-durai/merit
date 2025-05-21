@@ -33,6 +33,32 @@ import "../css/living.css";
 
 const API_BASE_URL = "http://localhost:5001";
 
+// Add Indian states with their cities
+const statesWithCities = {
+  "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool"],
+  "Assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon"],
+  "Bihar": ["Patna", "Gaya", "Muzaffarpur", "Bhagalpur", "Darbhanga"],
+  "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur", "Korba", "Durg"],
+  "Delhi": ["New Delhi", "Delhi", "Noida", "Gurgaon", "Faridabad"],
+  "Goa": ["Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda"],
+  "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Gandhinagar"],
+  "Haryana": ["Chandigarh", "Faridabad", "Gurgaon", "Panipat", "Ambala"],
+  "Himachal Pradesh": ["Shimla", "Dharamshala", "Manali", "Kullu", "Solan"],
+  "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Hazaribagh"],
+  "Karnataka": ["Bengaluru", "Mysuru", "Hubballi", "Mangaluru", "Belagavi"],
+  "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Kollam"],
+  "Madhya Pradesh": ["Bhopal", "Indore", "Jabalpur", "Gwalior", "Ujjain"],
+  "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik"],
+  "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Berhampur", "Sambalpur"],
+  "Punjab": ["Chandigarh", "Ludhiana", "Amritsar", "Jalandhar", "Patiala"],
+  "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer"],
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem"],
+  "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam"],
+  "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Meerut"],
+  "Uttarakhand": ["Dehradun", "Haridwar", "Roorkee", "Haldwani", "Rudrapur"],
+  "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri"]
+};
+
 const getImageSrc = (image) => {
   if (!image) return "https://via.placeholder.com/250";
   if (image?.startsWith("data:image") || image?.startsWith("http")) return image;
@@ -49,19 +75,33 @@ const CheckoutProgressBar = ({ currentStep }) => {
 
   return (
     <div className="checkout-progress mb-4">
-      <div className="d-flex justify-content-between position-relative">
+      <div className="checkout-steps-container">
         {steps.map((step, index) => (
           <div 
-            key={index} 
-            className={`step-item ${currentStep >= index + 1 ? 'active' : ''}`}
+            key={index}
+            className={`checkout-step ${currentStep >= index + 1 ? 'active' : ''} ${currentStep > index + 1 ? 'completed' : ''}`}
           >
-            <div className="step-icon">
-              {currentStep > index + 1 ? <CheckCircle /> : step.icon}
+            <div className="step-circle">
+              {currentStep > index + 1 ? (
+                <CheckCircle className="check-icon" />
+              ) : (
+                <div className="step-number">
+                  <span>{index + 1}</span>
+                  {currentStep === index + 1 && <div className="active-pulse"></div>}
+                </div>
+              )}
             </div>
-            <div className="step-title">{step.title}</div>
+            <div className="step-label">{step.title}</div>
+
+            {index < steps.length - 1 && (
+              <div className={`step-line ${currentStep > index + 1 ? 'completed' : ''}`}>
+                {currentStep > index + 1 && <div className="moving-car-container">
+                  <Truck className="moving-car" />
+                </div>}
+              </div>
+            )}
           </div>
         ))}
-        <div className="progress-line" style={{ width: `${(currentStep - 1) * 33.33}%` }} />
       </div>
     </div>
   );
@@ -80,6 +120,11 @@ const living = () => {
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
+  const [state, setState] = useState("");
+  const [city, setCity] = useState("");
+  const [pinCode, setPinCode] = useState("");
+  const [formErrors, setFormErrors] = useState({});
+  const [cityOptions, setCityOptions] = useState([]);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -93,6 +138,8 @@ const living = () => {
   const [reviewsError, setReviewsError] = useState(null);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [paymentInProgress, setPaymentInProgress] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("online"); // "online" or "cod" (Cash on Delivery)
+  const [detailsQuantity, setDetailsQuantity] = useState(1);
 
   const { cartItems, addToCart } = useContext(CartContext);
   const { isAuthenticated, user } = useContext(AuthContext);
@@ -229,6 +276,16 @@ const living = () => {
     }
   }, [showDetailsModal, detailsProduct]);
 
+  useEffect(() => {
+    // When state changes, update the available cities
+    if (state) {
+      setCityOptions(statesWithCities[state] || []);
+      setCity(""); // Reset city when state changes
+    } else {
+      setCityOptions([]);
+    }
+  }, [state]);
+
   const fetchUserWishlist = async () => {
     if (!isAuthenticated) {
       setWishlist([]);
@@ -338,9 +395,9 @@ const living = () => {
     }
   };
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = (product, quantity = 1) => {
     try {
-      addToCart(product, navigate);
+      addToCart({ ...product, quantity }, navigate);
       toast.success("Item added to cart successfully!");
     } catch (error) {
       if (
@@ -355,7 +412,94 @@ const living = () => {
     }
   };
 
+  const handleBuyNow = (product, quantity = 1) => {
+    if (!isAuthenticated) {
+      toast.warning("Please login to proceed!");
+      return;
+    }
+    
+    let imageData = product.image;
+    if (imageData && !imageData.startsWith("data:image") && !imageData.startsWith("http")) {
+      imageData = `data:image/jpeg;base64,${imageData}`;
+    }
+    
+    setSelectedProduct({
+      ...product,
+      image: imageData,
+      quantity // Pass selected quantity
+    });
+    setShowCheckout(true);
+    setStep(1);
+    setOrderPlaced(false);
+    
+    // Reset form fields and errors
+    if (user) {
+      setName(user.name || "");
+    } else {
+      setName("");
+    }
+    setPhone("");
+    setAddress("");
+    setState("");
+    setCity("");
+    setPinCode("");
+    setFormErrors({});
+  };
+
   const handleRazorpayPayment = async () => {
+    // If Cash on Delivery is selected, skip Razorpay and place the order directly
+    if (paymentMethod === "cod") {
+      try {
+        setPaymentInProgress(true);
+        const token = localStorage.getItem("token");
+        if (!token) {
+          toast.error("You are not logged in. Please log in to place an order.");
+          setPaymentInProgress(false);
+          return;
+        }
+
+        const orderData = {
+          items: [{
+            productId: selectedProduct._id,
+            name: selectedProduct.name,
+            price: selectedProduct.price,
+            quantity: 1,
+            image: selectedProduct.image,
+          }],
+          totalAmount: selectedProduct.price,
+          name,
+          phone,
+          address,
+          state,
+          city,
+          pinCode,
+          paymentMethod: "COD",
+          paymentStatus: "Pending"
+        };
+
+        await axios.post(`${API_BASE_URL}/api/store-order`, orderData, {
+          headers: {
+            Authorization: token,
+          },
+        });
+        
+        toast.success("Order placed successfully! Payment will be collected upon delivery.");
+        setOrderPlaced(true);
+        setTimeout(() => {
+          setShowCheckout(false);
+          navigate("/profile");
+        }, 2000);
+        setPaymentInProgress(false);
+        return;
+      } catch (error) {
+        console.error("Error placing COD order:", error.response || error);
+        toast.error(error.response?.data?.error || "Failed to place order. Please try again.");
+        setPaymentInProgress(false);
+        return;
+      }
+    }
+
+    // If online payment is selected, proceed with Razorpay
     try {
       setPaymentInProgress(true);
       
@@ -394,6 +538,9 @@ const living = () => {
               name,
               phone,
               address,
+              state,
+              city,
+              pinCode,
               paymentId: paymentResponse.razorpay_payment_id,
             };
 
@@ -446,197 +593,80 @@ const living = () => {
     }
   };
 
-  const handleBuyNow = (product) => {
-    if (!isAuthenticated) {
-      toast.warning("Please login to proceed!");
-      return;
+  const validateForm = () => {
+    const errors = {};
+    
+    // Name validation
+    if (!name.trim()) {
+      errors.name = "Name is required";
+    } else if (name.trim().length < 3) {
+      errors.name = "Name must be at least 3 characters";
     }
     
-    let imageData = product.image;
-    if (imageData && !imageData.startsWith("data:image") && !imageData.startsWith("http")) {
-      imageData = `data:image/jpeg;base64,${imageData}`;
+    // Phone validation
+    if (!phone.trim()) {
+      errors.phone = "Phone number is required";
+    } else if (!/^\d{10}$/.test(phone.trim())) {
+      errors.phone = "Phone must be 10 digits";
     }
     
-    setSelectedProduct({
-      ...product,
-      image: imageData
-    });
-    setShowCheckout(true);
-    setStep(1);
-    setOrderPlaced(false);
-    
-    if (user) {
-      setName(user.name || "");
+    // Address validation
+    if (!address.trim()) {
+      errors.address = "Address is required";
+    } else if (address.trim().length < 5) {
+      errors.address = "Address is too short";
     }
+    
+    // State validation
+    if (!state) {
+      errors.state = "Please select a state";
+    }
+    
+    // City validation
+    if (!city) {
+      errors.city = "Please select a city";
+    }
+    
+    // PIN Code validation
+    if (!pinCode.trim()) {
+      errors.pinCode = "PIN Code is required";
+    } else if (!/^\d{6}$/.test(pinCode.trim())) {
+      errors.pinCode = "PIN Code must be 6 digits";
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const nextStep = () => {
     if (step === 2) {
-      if (address.trim() === "") {
-        toast.warning("Please enter delivery address.");
-        return;
-      }
-      if (name.trim() === "") {
-        toast.warning("Please enter your full name.");
-        return;
-      }
-      if (phone.trim() === "" || !/^\d{10}$/.test(phone)) {
-        toast.warning("Please enter a valid 10-digit phone number.");
+      if (!validateForm()) {
+        toast.warning("Please fill all required fields correctly.");
         return;
       }
     }
+    
     if (step === 4) {
       handleRazorpayPayment();
       return;
     }
+    
     setStep(step + 1);
   };
 
   const previousStep = () => setStep(step - 1);
 
-  const renderStepContent = () => {
-    switch (step) {
-      case 1:
-        return (
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
-              <h5 className="mb-4">Review Your Order</h5>
-              <ListGroup variant="flush">
-                <ListGroup.Item className="py-3">
-                  <div className="d-flex align-items-center">
-                    <img 
-                      src={getImageSrc(selectedProduct?.image)} 
-                      alt={selectedProduct?.name} 
-                      style={{ width: '60px', height: '60px', objectFit: 'cover' }}
-                      className="rounded"
-                    />
-                    <div className="ms-3 flex-grow-1">
-                      <h6 className="mb-1">{selectedProduct?.name}</h6>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                          <small className="text-muted">Qty: 1</small>
-                          <Badge bg="success" className="ms-2">₹{selectedProduct?.price}</Badge>
-                        </div>
-                        <div>
-                          <Badge bg="warning" text="dark">₹{selectedProduct?.price}</Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </ListGroup.Item>
-                <ListGroup.Item className="bg-light">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <h6 className="mb-0">Total Amount:</h6>
-                    <h5 className="mb-0 text-success">₹{selectedProduct?.price}</h5>
-                  </div>
-                </ListGroup.Item>
-              </ListGroup>
-            </Card.Body>
-          </Card>
-        );
-
-      case 2:
-        return (
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
-              <h5 className="mb-4">Delivery Address</h5>
-              <Form>
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Full Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter your full name"
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Phone Number</Form.Label>
-                      <Form.Control
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="Enter your phone number"
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Form.Group className="mb-3">
-                  <Form.Label>Address Line 1</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="House/Flat No., Street Name"
-                  />
-                </Form.Group>
-                <Row>
-                  <Col md={4}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>City</Form.Label>
-                      <Form.Control type="text" placeholder="City" />
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>State</Form.Label>
-                      <Form.Control type="text" placeholder="State" />
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>PIN Code</Form.Label>
-                      <Form.Control type="text" placeholder="PIN Code" />
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </Form>
-            </Card.Body>
-          </Card>
-        );
-
-      case 3:
-        return (
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
-              <h5 className="mb-4">Confirm Your Details</h5>
-              <p><strong>Name:</strong> {name}</p>
-              <p><strong>Phone:</strong> {phone}</p>
-              <p><strong>Address:</strong> {address}</p>
-              <p><strong>Total Amount:</strong> ₹{selectedProduct?.price}</p>
-            </Card.Body>
-          </Card>
-        );
-
-      case 4:
-        return (
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
-              <h5 className="mb-4">Proceed to Payment</h5>
-              <p>Click "Pay Now" to complete your payment using Razorpay.</p>
-            </Card.Body>
-          </Card>
-        );
-
-      default:
-        return null;
-    }
-  };
-
   const handleViewDetails = (product) => {
     setDetailsProduct(product);
     setShowDetailsModal(true);
+    setDetailsQuantity(1); // Reset quantity to 1 when opening modal
   };
 
-  const closeDetailsModal = () => {
+  const handleCloseDetailsModal = () => {
     setShowDetailsModal(false);
     setDetailsProduct(null);
   };
-  
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     if (!reviewText.trim()) {
@@ -700,25 +730,870 @@ const living = () => {
     setReviewSubmitting(false);
   };
 
-  if (loading)
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
-        <Spinner
-          animation="border"
-          variant="primary"
-          className="loading-spinner"
-        />
-      </div>
-    );
-  if (error)
-    return (
-      <Container className="mt-5 pt-5">
-        <Alert variant="danger" className="text-center p-4 shadow-sm">
-          <Alert.Heading>Oh snap! Something went wrong.</Alert.Heading>
-          <p>{error}</p>
-        </Alert>
-      </Container>
-    );
+  const renderStepContent = () => {
+    switch (step) {
+      case 1:
+        return (
+          <Card className="border-0 shadow-sm checkout-card">
+            <Card.Body className="p-4">
+              <div className="d-flex align-items-center mb-4">
+                <div className="step-icon-large bg-primary text-white">1</div>
+                <h5 className="mb-0 ms-3">Review Your Order</h5>
+              </div>
+              
+              <div className="bg-light p-3 rounded mb-4">
+                <h6 className="text-muted mb-3 border-bottom pb-2">ORDER SUMMARY</h6>
+                <div className="d-flex align-items-center">
+                  <div className="position-relative checkout-product-img-container">
+                    <img 
+                      src={getImageSrc(selectedProduct?.image)} 
+                      alt={selectedProduct?.name} 
+                      className="checkout-product-img"
+                    />
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                      1
+                    </span>
+                  </div>
+                  <div className="ms-3 flex-grow-1">
+                    <h6 className="mb-1 product-name">{selectedProduct?.name}</h6>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <Badge bg="light" text="dark" className="border">
+                        Unit Price: ₹{selectedProduct?.price}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="price-summary">
+                <div className="d-flex justify-content-between py-2">
+                  <span>Subtotal</span>
+                  <span>₹{selectedProduct?.price}</span>
+                </div>
+                <div className="d-flex justify-content-between py-2">
+                  <span>Shipping</span>
+                  <span className="text-success">FREE</span>
+                </div>
+                <div className="d-flex justify-content-between py-2">
+                  <span>Tax</span>
+                  <span>₹0</span>
+                </div>
+                <hr />
+                <div className="d-flex justify-content-between py-2 fw-bold">
+                  <span>Total</span>
+                  <span className="total-price">₹{selectedProduct?.price}</span>
+                </div>
+              </div>
+              
+              <div className="mt-4 checkout-info-box">
+                <div className="d-flex">
+                  <Truck className="text-primary me-3 mt-1" size={22} />
+                  <div>
+                    <h6 className="mb-1">Free shipping</h6>
+                    <p className="text-muted small mb-0">Delivery within 3-5 business days</p>
+                  </div>
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+        );
+
+      case 2:
+        return (
+          <Card className="border-0 shadow-sm checkout-card">
+            <Card.Body className="p-4">
+              <div className="d-flex align-items-center mb-4">
+                <div className="step-icon-large bg-primary text-white">2</div>
+                <h5 className="mb-0 ms-3">Delivery Information</h5>
+              </div>
+              
+              <Form>
+                <Row className="g-3">
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold">
+                        Full Name <span className="text-danger">*</span>
+                      </Form.Label>
+                      <InputGroup hasValidation>
+                        <InputGroup.Text className="bg-light">
+                          <i className="bi bi-person"></i>
+                        </InputGroup.Text>
+                        <Form.Control
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Enter your full name"
+                          isInvalid={!!formErrors.name}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {formErrors.name}
+                        </Form.Control.Feedback>
+                      </InputGroup>
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold">
+                        Phone Number <span className="text-danger">*</span>
+                      </Form.Label>
+                      <InputGroup hasValidation>
+                        <InputGroup.Text className="bg-light">+91</InputGroup.Text>
+                        <Form.Control
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                          placeholder="10-digit number"
+                          maxLength={10}
+                          isInvalid={!!formErrors.phone}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {formErrors.phone}
+                        </Form.Control.Feedback>
+                      </InputGroup>
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col md={12}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold">
+                        Address Line <span className="text-danger">*</span>
+                      </Form.Label>
+                      <InputGroup hasValidation>
+                        <InputGroup.Text className="bg-light">
+                          <GeoAlt size={16} />
+                        </InputGroup.Text>
+                        <Form.Control
+                          type="text"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          placeholder="House/Flat No., Street Name, Area"
+                          isInvalid={!!formErrors.address}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {formErrors.address}
+                        </Form.Control.Feedback>
+                      </InputGroup>
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold">
+                        State <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Select 
+                        value={state}
+                        onChange={(e) => setState(e.target.value)}
+                        isInvalid={!!formErrors.state}
+                        className="form-select-custom"
+                      >
+                        <option value="">Select State</option>
+                        {Object.keys(statesWithCities).map((stateName) => (
+                          <option key={stateName} value={stateName}>
+                            {stateName}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid">
+                        {formErrors.state}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold">
+                        City <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Select 
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        disabled={!state}
+                        isInvalid={!!formErrors.city}
+                        className="form-select-custom"
+                      >
+                        <option value="">Select City</option>
+                        {cityOptions.map((cityName) => (
+                          <option key={cityName} value={cityName}>
+                            {cityName}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid">
+                        {formErrors.city}
+                      </Form.Control.Feedback>
+                      {!state && !formErrors.city && (
+                        <Form.Text className="text-muted">
+                          Please select a state first
+                        </Form.Text>
+                      )}
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold">
+                        PIN Code <span className="text-danger">*</span>
+                      </Form.Label>
+                      <InputGroup hasValidation>
+                        <InputGroup.Text className="bg-light">
+                          <i className="bi bi-geo"></i>
+                        </InputGroup.Text>
+                        <Form.Control
+                          type="text"
+                          value={pinCode}
+                          onChange={(e) => setPinCode(e.target.value.replace(/\D/g, ''))}
+                          placeholder="6-digit PIN"
+                          maxLength={6}
+                          isInvalid={!!formErrors.pinCode}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {formErrors.pinCode}
+                        </Form.Control.Feedback>
+                      </InputGroup>
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </Form>
+            </Card.Body>
+          </Card>
+        );
+
+      case 3:
+        return (
+          <Card className="border-0 shadow-sm checkout-card">
+            <Card.Body className="p-4">
+              <div className="d-flex align-items-center mb-4">
+                <div className="step-icon-large bg-primary text-white">3</div>
+                <h5 className="mb-0 ms-3">Confirm Your Details</h5>
+              </div>
+              
+              <div className="bg-light p-3 rounded mb-4">
+                <h6 className="text-muted mb-3 border-bottom pb-2">ORDER SUMMARY</h6>
+                <div className="d-flex align-items-center">
+                  <div className="position-relative checkout-product-img-container">
+                    <img 
+                      src={getImageSrc(selectedProduct?.image)} 
+                      alt={selectedProduct?.name} 
+                      className="checkout-product-img"
+                    />
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                      1
+                    </span>
+                  </div>
+                  <div className="ms-3 flex-grow-1">
+                    <h6 className="mb-1 product-name">{selectedProduct?.name}</h6>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <Badge bg="light" text="dark" className="border">
+                        Unit Price: ₹{selectedProduct?.price}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="row">
+                <div className="col-md-6">
+                  <div className="order-details-section">
+                    <h6 className="section-title">Customer Details</h6>
+                    <div className="detail-item">
+                      <div className="detail-label">Name:</div>
+                      <div className="detail-value">{name}</div>
+                    </div>
+                    <div className="detail-item">
+                      <div className="detail-label">Phone:</div>
+                      <div className="detail-value">{phone}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="col-md-6">
+                  <div className="order-details-section">
+                    <h6 className="section-title">Shipping Address</h6>
+                    <div className="shipping-address">
+                      <p className="mb-1">{name}</p>
+                      <p className="mb-1">{address}</p>
+                      <p className="mb-1">{city}, {state} - {pinCode}</p>
+                      <p className="mb-1">Phone: {phone}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="price-summary mt-4">
+                <div className="d-flex justify-content-between py-2">
+                  <span>Subtotal</span>
+                  <span>₹{selectedProduct?.price}</span>
+                </div>
+                <div className="d-flex justify-content-between py-2">
+                  <span>Shipping</span>
+                  <span className="text-success">FREE</span>
+                </div>
+                <div className="d-flex justify-content-between py-2">
+                  <span>Tax</span>
+                  <span>₹0</span>
+                </div>
+                <hr />
+                <div className="d-flex justify-content-between py-2 fw-bold">
+                  <span>Total</span>
+                  <span className="total-price">₹{selectedProduct?.price}</span>
+                </div>
+              </div>
+              
+              <div className="mt-4">
+                <Form.Group>
+                  <Form.Label className="fw-semibold">Choose Payment Method</Form.Label>
+                  <div className="payment-method-options">
+                    <Form.Check
+                      type="radio"
+                      id="payment-online"
+                      name="paymentMethod"
+                      label={
+                        <div className="d-flex align-items-center">
+                          <CurrencyDollar className="me-2" size={20} />
+                          <div>
+                            <span className="d-block">Online Payment</span>
+                            <small className="text-muted">Pay securely with Razorpay</small>
+                          </div>
+                        </div>
+                      }
+                      value="online"
+                      checked={paymentMethod === "online"}
+                      onChange={() => setPaymentMethod("online")}
+                      className="payment-method-option"
+                    />
+                    <Form.Check
+                      type="radio"
+                      id="payment-cod"
+                      name="paymentMethod"
+                      label={
+                        <div className="d-flex align-items-center">
+                          <Truck className="me-2" size={20} />
+                          <div>
+                            <span className="d-block">Cash on Delivery</span>
+                            <small className="text-muted">Pay when you receive the product</small>
+                          </div>
+                        </div>
+                      }
+                      value="cod"
+                      checked={paymentMethod === "cod"}
+                      onChange={() => setPaymentMethod("cod")}
+                      className="payment-method-option mt-2"
+                    />
+                  </div>
+                </Form.Group>
+              </div>
+              
+              <Alert variant="info" className="d-flex align-items-center mt-4">
+                <ShieldLock className="text-primary me-2" size={18} />
+                <div>
+                  Please verify all details are correct before proceeding to payment.
+                </div>
+              </Alert>
+            </Card.Body>
+          </Card>
+        );
+
+      case 4:
+        return (
+          <Card className="border-0 shadow-sm checkout-card">
+            <Card.Body className="p-4">
+              <div className="d-flex align-items-center mb-4">
+                <div className="step-icon-large bg-primary text-white">4</div>
+                <h5 className="mb-0 ms-3">Complete Payment</h5>
+              </div>
+              
+              <div className="text-center payment-info">
+                <div className="mb-4">
+                  <div className="total-amount-circle">
+                    <div>
+                      <small className="text-muted">Total</small>
+                      <div className="amount">₹{selectedProduct?.price}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="selected-payment-method mb-4">
+                  <h6 className="mb-3">Selected Payment Method:</h6>
+                  <div className={`payment-method-card ${paymentMethod === "online" ? "online" : "cod"}`}>
+                    {paymentMethod === "online" ? (
+                      <>
+                        <div className="payment-method-icon">
+                          <CurrencyDollar size={28} />
+                        </div>
+                        <div className="payment-method-details">
+                          <h6 className="mb-1">Online Payment</h6>
+                          <p className="mb-0">You'll be redirected to our secure payment partner</p>
+                          <img 
+                            src="https://upload.wikimedia.org/wikipedia/en/e/e8/Razorpay_logo.svg" 
+                            alt="Razorpay" 
+                            height="25"
+                            className="mt-2" 
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="payment-method-icon cod">
+                          <Truck size={28} />
+                        </div>
+                        <div className="payment-method-details">
+                          <h6 className="mb-1">Cash on Delivery</h6>
+                          <p className="mb-0">Pay when you receive the product at your doorstep</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="order-summary-container p-3 bg-light rounded mb-4">
+                  <div className="d-flex align-items-center mb-3">
+                    <img 
+                      src={getImageSrc(selectedProduct?.image)} 
+                      alt={selectedProduct?.name} 
+                      width="50" 
+                      height="50" 
+                      className="me-3 rounded"
+                      style={{ objectFit: "cover" }}
+                    />
+                    <div>
+                      <h6 className="mb-0">{selectedProduct?.name}</h6>
+                      <span className="badge bg-success">₹{selectedProduct?.price}</span>
+                    </div>
+                  </div>
+                  <div className="address-summary">
+                    <small className="text-muted d-block">Delivery Address:</small>
+                    <small>{address}, {city}, {state} - {pinCode}</small>
+                  </div>
+                </div>
+                
+                {paymentMethod === "online" && (
+                  <div className="security-info mb-3">
+                    <div className="d-flex align-items-center justify-content-center">
+                      <ShieldLock className="text-success me-2" size={22} />
+                      <span>Your payment information is secure</span>
+                    </div>
+                    <div className="payment-icons mt-3">
+                      <i className="payment-icon bi bi-credit-card me-2"></i>
+                      <i className="payment-icon bi bi-paypal me-2"></i>
+                      <i className="payment-icon bi bi-wallet2 me-2"></i>
+                      <i className="payment-icon bi bi-bank me-2"></i>
+                      <i className="payment-icon bi bi-currency-rupee"></i>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="action-text">
+                  <p className="mb-0">
+                    {paymentMethod === "online" 
+                      ? "Click 'Pay Now' to complete your payment." 
+                      : "Click 'Place Order' to confirm your Cash on Delivery order."}
+                  </p>
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  useEffect(() => {
+    const styleEl = document.createElement('style');
+    styleEl.innerHTML = `
+      .checkout-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      
+      .checkout-card:hover {
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+      }
+      
+      .step-icon-large {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+      }
+      
+      .checkout-product-img-container {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .checkout-product-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+      }
+      
+      .product-name {
+        font-weight: 600;
+        color: #333;
+      }
+      
+      .price-summary {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+      }
+      
+      .total-price {
+        font-size: 1.2rem;
+        color: #198754;
+      }
+      
+      .checkout-info-box {
+        background-color: #f0f8ff;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #0d6efd;
+      }
+      
+      .form-select-custom {
+        padding-left: 12px;
+        height: calc(1.5em + 0.75rem + 10px);
+      }
+      
+      .progress-track {
+        position: absolute;
+        height: 4px;
+        background-color: #e9ecef;
+        width: 75%;
+        top: 20px;
+        left: 12%;
+        z-index: 0;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      
+      .progress-line {
+        height: 100%;
+        background-color: #0d6efd;
+        transition: width 0.5s ease;
+        position: relative;
+        border-radius: 4px;
+      }
+      
+      .progress-animation {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: 60px;
+        background: linear-gradient(90deg, rgba(13,110,253,0) 0%, rgba(255,255,255,0.5) 50%, rgba(13,110,253,0) 100%);
+        animation: shimmer 1.5s infinite;
+      }
+      
+      .step-item {
+        z-index: 1;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        width: 60px;
+      }
+      
+      .step-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #e9ecef;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 8px;
+        transition: all 0.3s ease;
+        position: relative;
+        box-shadow: 0 0 0 4px #fff;
+      }
+      
+      .pulse-animation {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: rgba(13, 110, 253, 0.2);
+        animation: pulse 1.5s infinite;
+      }
+      
+      .step-item.active .step-icon {
+        background-color: #0d6efd;
+        color: white;
+        transform: scale(1.1);
+      }
+      
+      .step-item.completed .step-icon {
+        background-color: #198754;
+        color: white;
+      }
+      
+      .complete-icon {
+        animation: check-pop 0.5s ease-out;
+      }
+      
+      .step-item.active .step-title {
+        color: #0d6efd;
+        font-weight: 600;
+      }
+      
+      .step-item.completed .step-title {
+        color: #198754;
+        font-weight: 600;
+      }
+      
+      .step-connector {
+        position: absolute;
+        top: 20px;
+        left: 70px;
+        height: 4px;
+        width: calc(100% - 20px);
+        background-color: transparent;
+        z-index: 0;
+        overflow: hidden;
+      }
+      
+      .step-connector.completed {
+        background-color: #198754;
+      }
+      
+      .moving-dot {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: white;
+        border-radius: 50%;
+        top: -3px;
+        left: 0;
+        animation: move-dot 3s infinite;
+        box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      }
+      
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 0.8;
+        }
+        50% {
+          transform: scale(1.5);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0;
+        }
+      }
+      
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+      
+      @keyframes move-dot {
+        0% {
+          left: 0;
+        }
+        50% {
+          left: calc(100% - 10px);
+        }
+        100% {
+          left: 0;
+        }
+      }
+      
+      @keyframes check-pop {
+        0% {
+          transform: scale(0);
+        }
+        70% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      /* New Checkout Progress Bar Styles */
+      .checkout-progress {
+        position: relative;
+        padding: 30px 0;
+        margin-bottom: 2rem;
+        overflow: visible;
+      }
+
+      .checkout-steps-container {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      .checkout-step {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+
+      .step-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 0 5px white, 0 2px 5px rgba(0,0,0,0.1);
+        position: relative;
+        transition: all 0.5s ease;
+        margin-bottom: 10px;
+        font-weight: 500;
+        color: #6c757d;
+      }
+
+      .checkout-step.active .step-circle {
+        background-color: #0d6efd;
+        color: white;
+        transform: scale(1.15);
+        box-shadow: 0 0 0 5px white, 0 5px 15px rgba(13, 110, 253, 0.3);
+      }
+
+      .checkout-step.completed .step-circle {
+        background-color: #198754;
+        color: white;
+        box-shadow: 0 0 0 5px white, 0 5px 15px rgba(25, 135, 84, 0.3);
+      }
+
+      .step-number {
+        font-size: 1.2rem;
+        position: relative;
+      }
+
+      .check-icon {
+        font-size: 1.3rem;
+        animation: check-appear 0.5s ease;
+      }
+
+      .step-label {
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: #6c757d;
+        transition: all 0.3s ease;
+      }
+
+      .checkout-step.active .step-label {
+        color: #0d6efd;
+        font-weight: 600;
+      }
+
+      .checkout-step.completed .step-label {
+        color: #198754;
+        font-weight: 600;
+      }
+
+      .step-line {
+        position: absolute;
+        top: 25px;
+        left: 60%;
+        width: 80%;
+        height: 4px;
+        background-color: #e9ecef;
+        z-index: 0;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .step-line.completed {
+        background-color: #198754;
+      }
+
+      .active-pulse {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(13, 110, 253, 0.3);
+        animation: pulse-ring 2s ease infinite;
+      }
+
+      .moving-car-container {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .moving-car {
+        position: absolute;
+        color: white;
+        font-size: 20px;
+        top: -8px;
+        animation: move-truck 4s linear infinite;
+      }
+
+      @keyframes pulse-ring {
+        0% {
+          transform: translate(-50%, -50%) scale(0.8);
+          opacity: 0.8;
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.3);
+          opacity: 0;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(0.8);
+          opacity: 0;
+        }
+      }
+
+      @keyframes check-appear {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.3);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes move-truck {
+        0% {
+          left: -15px;
+        }
+        100% {
+          left: calc(100% + 15px);
+        }
+      }
+    `;
+    document.head.appendChild(styleEl);
+    return () => {
+      document.head.removeChild(styleEl);
+    };
+  }, []);
 
   return (
     <Container fluid className="mt-5 pt-5 px-4">
@@ -918,7 +1793,7 @@ const living = () => {
           </Button>
         </div>
       )}      
-      <Modal show={showDetailsModal} onHide={closeDetailsModal} size="lg" centered className="product-modal">
+      <Modal show={showDetailsModal} onHide={handleCloseDetailsModal} size="lg" centered className="product-modal">
         <Modal.Header closeButton>
           <Modal.Title>Product Details</Modal.Title>
         </Modal.Header>
@@ -926,12 +1801,13 @@ const living = () => {
           {detailsProduct && (
             <Row>
               <Col md={6} className="mb-4 mb-md-0">
-                <div className="product-image-container">
+                <div className="product-image-container" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                   {detailsProduct.discount && (
                     <Badge bg="danger" className="discount-tag">
                       {detailsProduct.discount}% OFF
                     </Badge>
                   )}
+                  {/* Portrait image, centered and fixed size */}
                   <img
                     src={
                       detailsProduct.image?.startsWith("data:image")
@@ -940,35 +1816,19 @@ const living = () => {
                     }
                     alt={detailsProduct.name}
                     className="product-detail-img"
+                    style={{
+                      width: "220px",
+                      height: "330px",
+                      objectFit: "cover",
+                      borderRadius: "12px",
+                      boxShadow: "0 2px 16px rgba(0,0,0,0.08)"
+                    }}
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = "https://via.placeholder.com/400?text=No+Image";
+                      e.target.src = "https://via.placeholder.com/220x330?text=No+Image";
                     }}
                   />
-                  <div className="product-thumbnails">
-                    <div className="thumbnail active">
-                      <img
-                        src={
-                          detailsProduct.image?.startsWith("data:image")
-                            ? detailsProduct.image
-                            : `data:image/jpeg;base64,${detailsProduct.image}`
-                        }
-                        alt="Main view"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "https://via.placeholder.com/80?text=Image";
-                        }}
-                      />
-                    </div>
-                    {[1, 2, 3].map((_, idx) => (
-                      <div key={idx} className="thumbnail">
-                        <img
-                          src={`https://via.placeholder.com/80?text=View+${idx + 1}`}
-                          alt={`View ${idx + 1}`}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  {/* No thumbnails, no view images */}
                 </div>
               </Col>
               <Col md={6}>
@@ -1048,25 +1908,21 @@ const living = () => {
                       variant="outline-secondary" 
                       size="sm" 
                       className="quantity-btn"
-                      onClick={() => {
-                        // Handle decrement
-                      }}
+                      onClick={() => setDetailsQuantity(q => Math.max(1, q - 1))}
                     >
                       -
                     </Button>
                     <input
                       type="number"
                       className="quantity-input"
-                      value={1}
+                      value={detailsQuantity}
                       readOnly
                     />
                     <Button 
                       variant="outline-secondary" 
                       size="sm" 
                       className="quantity-btn"
-                      onClick={() => {
-                        // Handle increment
-                      }}
+                      onClick={() => setDetailsQuantity(q => q + 1)}
                     >
                       +
                     </Button>
@@ -1077,7 +1933,7 @@ const living = () => {
                   <Button
                     variant="outline-primary"
                     className="btn-add-cart w-100"
-                    onClick={() => handleAddToCart(detailsProduct)}
+                    onClick={() => handleAddToCart(detailsProduct, detailsQuantity)}
                   >
                     <CartPlus size={18} className="me-2" /> Add to Cart
                   </Button>
@@ -1085,8 +1941,8 @@ const living = () => {
                     variant="primary"
                     className="btn-buy-now w-100"
                     onClick={() => {
-                      closeDetailsModal();
-                      handleBuyNow(detailsProduct);
+                      handleCloseDetailsModal();
+                      handleBuyNow(detailsProduct, detailsQuantity);
                     }}
                   >
                     Buy Now
@@ -1257,13 +2113,25 @@ const living = () => {
               <p className="mb-1">
                 Order ID: #{Math.random().toString(36).substr(2, 9)}
               </p>
-              <p className="text-muted mb-4">Thank you for shopping with us!</p>
-              <Button
-                variant="outline-primary"
-                onClick={() => window.location.href = "/living"}
-              >
-                Continue Shopping
-              </Button>
+              <p className="text-muted mb-4">
+                {paymentMethod === "cod" 
+                  ? "Thank you for shopping with us! Your cash on delivery order has been confirmed." 
+                  : "Thank you for shopping with us! Your payment has been received."}
+              </p>
+              <div className="d-flex justify-content-center gap-3">
+                <Button
+                  variant="outline-primary"
+                  onClick={() => window.location.href = "/living"}
+                               >
+                  Continue Shopping
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => navigate("/profile")}
+                >
+                  View My Orders
+                </Button>
+              </div>
             </div>
           ) : (
             <>
@@ -1285,9 +2153,10 @@ const living = () => {
               </Button>
             ) : (
               <Button 
-                variant="success" 
+                variant={paymentMethod === "online" ? "success" : "primary"} 
                 onClick={handleRazorpayPayment} 
                 disabled={paymentInProgress}
+                className="px-4"
               >
                 {paymentInProgress ? (
                   <>
@@ -1296,7 +2165,11 @@ const living = () => {
                   </>
                 ) : (
                   <>
-                    Pay Now <Truck className="ms-2" />
+                    {paymentMethod === "online" ? (
+                      <>Pay Now <CurrencyDollar className="ms-2" /></>
+                    ) : (
+                      <>Place Order <Truck className="ms-2" /></>
+                    )}
                   </>
                 )}
               </Button>

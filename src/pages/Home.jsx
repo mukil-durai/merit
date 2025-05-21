@@ -172,8 +172,8 @@ const Home = () => {
     { icon: <FaCheckCircle />, text: "100% Quality Assurance" },
   ];
 
-  // Always use the public path for assets in the public folder
-  const videoSrc = "/assets/Knit-Fabric.mp4";
+  // Use the correct base path for GitHub Pages deployment
+  const videoSrc = "/merit/assets/Knit-Fabric.mp4";
 
   return (
     <>
